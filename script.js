@@ -146,8 +146,10 @@ const setupHeroVideo = () => {
 
   if (!overlayVideo || !overlay) return;
 
-  // 检测移动设备
+  // 检测移动设备和iOS版本
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const iOSVersion = isIOS ? parseInt((navigator.userAgent.match(/OS (\d+)_/) || [])[1], 10) : 0;
 
   // 标记视频正在播放
   document.body.classList.add('intro-playing');
@@ -193,9 +195,14 @@ const setupHeroVideo = () => {
 
   // 移动端特殊处理
   if (isMobile) {
-    console.log('Mobile device detected');
+    console.log('Mobile device detected, iOS version:', iOSVersion);
 
-    // 3秒后如果视频没播放，显示进入按钮
+    // iOS 17+ 直接显示按钮，其他设备等3秒
+    const buttonDelay = (isIOS && iOSVersion >= 17) ? 500 : 3000;
+
+    console.log(`Will show button after ${buttonDelay}ms if video doesn't play`);
+
+    // 等待后如果视频没播放，显示进入按钮
     const showButtonTimeout = setTimeout(() => {
       if (overlayVideo.paused || overlayVideo.readyState < 2) {
         console.log('Video not playing, showing enter button');
@@ -204,7 +211,7 @@ const setupHeroVideo = () => {
           document.body.classList.add('show-mobile-btn');
         }
       }
-    }, 3000);
+    }, buttonDelay);
 
     // 如果视频成功播放，清除按钮显示
     overlayVideo.addEventListener('playing', () => {
