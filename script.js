@@ -157,6 +157,19 @@ const setupHeroVideo = () => {
     bgVideo.load();
   }
 
+  // 超短超时保护 - 3秒后如果视频还没播放就跳过
+  const quickTimeout = setTimeout(() => {
+    if (overlayVideo.readyState < 2 || overlayVideo.paused) {
+      console.warn('Intro video loading too slow, skipping');
+      endIntro();
+    }
+  }, 3000);
+
+  // 视频开始播放时清除快速超时
+  overlayVideo.addEventListener('playing', () => {
+    clearTimeout(quickTimeout);
+  }, { once: true });
+
   // 监听视频播放进度，在快结束时触发转场
   overlayVideo.addEventListener('timeupdate', () => {
     const timeRemaining = overlayVideo.duration - overlayVideo.currentTime;
@@ -169,6 +182,8 @@ const setupHeroVideo = () => {
   });
 
   const endIntro = () => {
+    clearTimeout(quickTimeout);
+
     // 确保转场已经开始
     if (!document.body.classList.contains('intro-transitioning')) {
       document.body.classList.add('intro-transitioning');
@@ -197,17 +212,19 @@ const setupHeroVideo = () => {
 
   overlayVideo.addEventListener('error', () => {
     console.warn('Intro video failed to load, showing site immediately');
+    clearTimeout(quickTimeout);
     endIntro();
   });
 
   // 如果视频加载失败或无法播放
   overlayVideo.addEventListener('loadedmetadata', () => {
     if (overlayVideo.duration === 0 || isNaN(overlayVideo.duration)) {
+      clearTimeout(quickTimeout);
       endIntro();
     }
   });
 
-  // 超时保护
+  // 最终超时保护 - 10秒
   setTimeout(() => {
     if (!document.body.classList.contains('intro-ended')) {
       console.warn('Intro video timeout, showing site');
