@@ -145,16 +145,6 @@ const setupHeroVideo = () => {
 
   if (!overlayVideo || !overlay) return;
 
-  // 检测移动设备
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-
-  // 移动设备直接跳过开场视频
-  if (isMobile) {
-    console.log('Mobile device detected, skipping intro video');
-    endIntro();
-    return;
-  }
-
   // 标记视频正在播放
   document.body.classList.add('intro-playing');
 
@@ -167,13 +157,13 @@ const setupHeroVideo = () => {
     bgVideo.load();
   }
 
-  // 超短超时保护 - 3秒后如果视频还没播放就跳过
+  // 超短超时保护 - 5秒后如果视频还没播放就跳过
   const quickTimeout = setTimeout(() => {
     if (overlayVideo.readyState < 2 || overlayVideo.paused) {
       console.warn('Intro video loading too slow, skipping');
       endIntro();
     }
-  }, 3000);
+  }, 5000);
 
   // 视频开始播放时清除快速超时
   overlayVideo.addEventListener('playing', () => {
@@ -234,13 +224,13 @@ const setupHeroVideo = () => {
     }
   });
 
-  // 最终超时保护 - 10秒
+  // 最终超时保护 - 15秒
   setTimeout(() => {
     if (!document.body.classList.contains('intro-ended')) {
       console.warn('Intro video timeout, showing site');
       endIntro();
     }
-  }, 10000);
+  }, 15000);
 };
 
 document.addEventListener('DOMContentLoaded', () => {
