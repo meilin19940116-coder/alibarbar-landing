@@ -103,6 +103,22 @@ const setupHeroMotion = () => {
   });
 };
 
+const setupHeroVideo = () => {
+  const visual = document.querySelector('[data-hero-visual]');
+  const video = visual?.querySelector('[data-hero-video]');
+  if (!visual || !video || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const markVideoReady = () => {
+    visual.classList.add('video-ready');
+    const playPromise = video.play();
+    if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(() => {});
+  };
+
+  video.addEventListener('canplay', markVideoReady, { once: true });
+  video.addEventListener('error', () => visual.classList.add('video-failed'), { once: true });
+  if (video.readyState >= 3) markVideoReady();
+};
+
 const setupTracking = () => {
   document.querySelectorAll('[data-track]').forEach((element) => {
     element.addEventListener('click', () => track('landing_click', { target: element.dataset.track }));
@@ -115,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupNavigation();
   setupReveal();
   setupHeroMotion();
+  setupHeroVideo();
   setupTracking();
   document.querySelectorAll('[data-year]').forEach((node) => { node.textContent = new Date().getFullYear(); });
 });
