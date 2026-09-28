@@ -145,6 +145,16 @@ const setupHeroVideo = () => {
 
   if (!overlayVideo || !overlay) return;
 
+  // 检测移动设备
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+
+  // 移动设备直接跳过开场视频
+  if (isMobile) {
+    console.log('Mobile device detected, skipping intro video');
+    endIntro();
+    return;
+  }
+
   // 标记视频正在播放
   document.body.classList.add('intro-playing');
 
