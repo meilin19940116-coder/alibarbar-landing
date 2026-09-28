@@ -2,6 +2,35 @@
 const SHOP_URL = 'https://ausvape-b.shopyys.net/collections/all';
 const AGE_GATE_KEY = 'alibarbar_age_confirmed';
 
+// Lottie 烟雾动画
+const setupLottieSmoke = () => {
+  if (typeof lottie === 'undefined') {
+    console.warn('Lottie library not loaded');
+    return;
+  }
+
+  // 使用免费的烟雾动画 JSON（LottieFiles 的公开资源）
+  const smokeAnimationURL = 'https://lottie.host/d4156a0f-39a5-4be1-8b97-a3d9fa3f2c75/BnW2Kzg3bK.json';
+
+  const containers = ['smoke-lottie-1', 'smoke-lottie-2', 'smoke-lottie-3'];
+
+  containers.forEach((id, index) => {
+    const container = document.getElementById(id);
+    if (!container) return;
+
+    setTimeout(() => {
+      lottie.loadAnimation({
+        container: container,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: smokeAnimationURL
+      });
+      console.log('Lottie smoke loaded:', id);
+    }, index * 500); // 错开加载时间
+  });
+};
+
 const track = (eventName, detail = {}) => {
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({ event: eventName, ...detail });
@@ -103,35 +132,97 @@ const setupHeroMotion = () => {
   });
 };
 
-const setupHeroVideo = () => {
-  const visual = document.querySelector('[data-hero-visual]');
-  const video = visual?.querySelector('[data-hero-video]');
-  if (!visual || !video || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  const markVideoReady = () => {
-    visual.classList.add('video-ready');
-    const playPromise = video.play();
-    if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(() => {});
-  };
-
-  video.addEventListener('canplay', markVideoReady, { once: true });
-  video.addEventListener('error', () => visual.classList.add('video-failed'), { once: true });
-  if (video.readyState >= 3) markVideoReady();
-};
-
 const setupTracking = () => {
   document.querySelectorAll('[data-track]').forEach((element) => {
     element.addEventListener('click', () => track('landing_click', { target: element.dataset.track }));
   });
 };
 
+const setupHeroVideo = () => {
+  const overlayVideo = document.querySelector('[data-intro-video]');
+  const overlay = document.querySelector('[data-intro-overlay]');
+  const bgVideo = document.querySelector('[data-hero-video-bg]');
+
+  if (!overlayVideo || !overlay) return;
+
+  // 标记视频正在播放
+  document.body.classList.add('intro-playing');
+
+  // 预加载背景视频到最后一帧
+  if (bgVideo) {
+    bgVideo.addEventListener('loadedmetadata', () => {
+      bgVideo.currentTime = bgVideo.duration - 0.1;
+      bgVideo.pause();
+    });
+    bgVideo.load();
+  }
+
+  // 监听视频播放进度，在快结束时触发转场
+  overlayVideo.addEventListener('timeupdate', () => {
+    const timeRemaining = overlayVideo.duration - overlayVideo.currentTime;
+
+    // 当剩余2秒时开始转场动画
+    if (timeRemaining <= 2 && timeRemaining > 0 && !document.body.classList.contains('intro-transitioning')) {
+      document.body.classList.add('intro-transitioning');
+      overlay.classList.add('is-fading');
+    }
+  });
+
+  const endIntro = () => {
+    // 确保转场已经开始
+    if (!document.body.classList.contains('intro-transitioning')) {
+      document.body.classList.add('intro-transitioning');
+      overlay.classList.add('is-fading');
+    }
+
+    // 延迟后完全移除遮罩
+    setTimeout(() => {
+      document.body.classList.remove('intro-playing');
+      document.body.classList.add('intro-ended');
+      overlay.classList.add('is-ended');
+
+      // 初始化烟雾效果
+      if (typeof window.initSmokeBackground === 'function') {
+        console.log('Initializing WebGL smoke...');
+        window.initSmokeBackground('webgl-smoke', '#d8a84e');
+      } else {
+        console.warn('initSmokeBackground function not found');
+      }
+    }, 1500);
+
+    track('intro_video_ended');
+  };
+
+  overlayVideo.addEventListener('ended', endIntro);
+
+  overlayVideo.addEventListener('error', () => {
+    console.warn('Intro video failed to load, showing site immediately');
+    endIntro();
+  });
+
+  // 如果视频加载失败或无法播放
+  overlayVideo.addEventListener('loadedmetadata', () => {
+    if (overlayVideo.duration === 0 || isNaN(overlayVideo.duration)) {
+      endIntro();
+    }
+  });
+
+  // 超时保护
+  setTimeout(() => {
+    if (!document.body.classList.contains('intro-ended')) {
+      console.warn('Intro video timeout, showing site');
+      endIntro();
+    }
+  }, 10000);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   setShopLinks();
   setupAgeGate();
   setupNavigation();
+  setupHeroVideo();
   setupReveal();
   setupHeroMotion();
-  setupHeroVideo();
   setupTracking();
   document.querySelectorAll('[data-year]').forEach((node) => { node.textContent = new Date().getFullYear(); });
 });
