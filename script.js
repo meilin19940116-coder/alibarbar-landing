@@ -142,8 +142,12 @@ const setupHeroVideo = () => {
   const overlayVideo = document.querySelector('[data-intro-video]');
   const overlay = document.querySelector('[data-intro-overlay]');
   const bgVideo = document.querySelector('[data-hero-video-bg]');
+  const mobileEnterBtn = document.querySelector('[data-mobile-enter]');
 
   if (!overlayVideo || !overlay) return;
+
+  // 检测移动设备
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
 
   // 标记视频正在播放
   document.body.classList.add('intro-playing');
@@ -157,37 +161,16 @@ const setupHeroVideo = () => {
     bgVideo.load();
   }
 
-  // 超短超时保护 - 5秒后如果视频还没播放就跳过
-  const quickTimeout = setTimeout(() => {
-    if (overlayVideo.readyState < 2 || overlayVideo.paused) {
-      console.warn('Intro video loading too slow, skipping');
-      endIntro();
-    }
-  }, 5000);
-
-  // 视频开始播放时清除快速超时
-  overlayVideo.addEventListener('playing', () => {
-    clearTimeout(quickTimeout);
-  }, { once: true });
-
-  // 监听视频播放进度，在快结束时触发转场
-  overlayVideo.addEventListener('timeupdate', () => {
-    const timeRemaining = overlayVideo.duration - overlayVideo.currentTime;
-
-    // 当剩余2秒时开始转场动画
-    if (timeRemaining <= 2 && timeRemaining > 0 && !document.body.classList.contains('intro-transitioning')) {
-      document.body.classList.add('intro-transitioning');
-      overlay.classList.add('is-fading');
-    }
-  });
-
   const endIntro = () => {
-    clearTimeout(quickTimeout);
-
     // 确保转场已经开始
     if (!document.body.classList.contains('intro-transitioning')) {
       document.body.classList.add('intro-transitioning');
       overlay.classList.add('is-fading');
+    }
+
+    // 隐藏移动端按钮
+    if (mobileEnterBtn) {
+      mobileEnterBtn.style.display = 'none';
     }
 
     // 延迟后完全移除遮罩
@@ -208,27 +191,82 @@ const setupHeroVideo = () => {
     track('intro_video_ended');
   };
 
+  // 移动端特殊处理
+  if (isMobile) {
+    console.log('Mobile device detected');
+
+    // 3秒后如果视频没播放，显示进入按钮
+    const showButtonTimeout = setTimeout(() => {
+      if (overlayVideo.paused || overlayVideo.readyState < 2) {
+        console.log('Video not playing, showing enter button');
+        if (mobileEnterBtn) {
+          mobileEnterBtn.style.display = 'block';
+        }
+      }
+    }, 3000);
+
+    // 如果视频成功播放，清除按钮显示
+    overlayVideo.addEventListener('playing', () => {
+      clearTimeout(showButtonTimeout);
+      if (mobileEnterBtn) {
+        mobileEnterBtn.style.display = 'none';
+      }
+    }, { once: true });
+
+    // 点击按钮进入
+    if (mobileEnterBtn) {
+      mobileEnterBtn.addEventListener('click', () => {
+        console.log('Enter button clicked');
+        endIntro();
+      });
+    }
+  }
+
+  // 监听视频播放进度，在快结束时触发转场
+  overlayVideo.addEventListener('timeupdate', () => {
+    const timeRemaining = overlayVideo.duration - overlayVideo.currentTime;
+
+    // 当剩余2秒时开始转场动画
+    if (timeRemaining <= 2 && timeRemaining > 0 && !document.body.classList.contains('intro-transitioning')) {
+      document.body.classList.add('intro-transitioning');
+      overlay.classList.add('is-fading');
+    }
+  });
+
   overlayVideo.addEventListener('ended', endIntro);
 
   overlayVideo.addEventListener('error', () => {
-    console.warn('Intro video failed to load, showing site immediately');
-    clearTimeout(quickTimeout);
-    endIntro();
+    console.warn('Intro video failed to load');
+    // 移动端显示按钮
+    if (isMobile && mobileEnterBtn) {
+      mobileEnterBtn.style.display = 'block';
+    } else {
+      // 桌面端直接跳过
+      endIntro();
+    }
   });
 
   // 如果视频加载失败或无法播放
   overlayVideo.addEventListener('loadedmetadata', () => {
     if (overlayVideo.duration === 0 || isNaN(overlayVideo.duration)) {
-      clearTimeout(quickTimeout);
-      endIntro();
+      if (isMobile && mobileEnterBtn) {
+        mobileEnterBtn.style.display = 'block';
+      } else {
+        endIntro();
+      }
     }
   });
 
   // 最终超时保护 - 15秒
   setTimeout(() => {
     if (!document.body.classList.contains('intro-ended')) {
-      console.warn('Intro video timeout, showing site');
-      endIntro();
+      console.warn('Intro video timeout');
+      // 移动端显示按钮而不是直接跳过
+      if (isMobile && mobileEnterBtn && mobileEnterBtn.style.display !== 'block') {
+        mobileEnterBtn.style.display = 'block';
+      } else if (!isMobile) {
+        endIntro();
+      }
     }
   }, 15000);
 };
