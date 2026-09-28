@@ -23,6 +23,12 @@ body.intro-playing { overflow: hidden; }
 body.intro-playing .site-header,
 body.intro-playing main,
 body.intro-playing .site-footer { opacity: 0; pointer-events: none; }
+
+/* 移动端显示按钮时，让页面内容透出 */
+body.intro-playing.show-mobile-btn .site-header,
+body.intro-playing.show-mobile-btn main,
+body.intro-playing.show-mobile-btn .site-footer { opacity: 0.3; }
+
 body.intro-transitioning .site-header,
 body.intro-transitioning main,
 body.intro-transitioning .site-footer { animation: fadeInContent 2s ease forwards; }

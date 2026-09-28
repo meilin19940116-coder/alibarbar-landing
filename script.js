@@ -201,6 +201,7 @@ const setupHeroVideo = () => {
         console.log('Video not playing, showing enter button');
         if (mobileEnterBtn) {
           mobileEnterBtn.style.display = 'block';
+          document.body.classList.add('show-mobile-btn');
         }
       }
     }, 3000);
@@ -210,6 +211,7 @@ const setupHeroVideo = () => {
       clearTimeout(showButtonTimeout);
       if (mobileEnterBtn) {
         mobileEnterBtn.style.display = 'none';
+        document.body.classList.remove('show-mobile-btn');
       }
     }, { once: true });
 
@@ -240,6 +242,7 @@ const setupHeroVideo = () => {
     // 移动端显示按钮
     if (isMobile && mobileEnterBtn) {
       mobileEnterBtn.style.display = 'block';
+      document.body.classList.add('show-mobile-btn');
     } else {
       // 桌面端直接跳过
       endIntro();
@@ -251,6 +254,7 @@ const setupHeroVideo = () => {
     if (overlayVideo.duration === 0 || isNaN(overlayVideo.duration)) {
       if (isMobile && mobileEnterBtn) {
         mobileEnterBtn.style.display = 'block';
+        document.body.classList.add('show-mobile-btn');
       } else {
         endIntro();
       }
@@ -264,6 +268,7 @@ const setupHeroVideo = () => {
       // 移动端显示按钮而不是直接跳过
       if (isMobile && mobileEnterBtn && mobileEnterBtn.style.display !== 'block') {
         mobileEnterBtn.style.display = 'block';
+        document.body.classList.add('show-mobile-btn');
       } else if (!isMobile) {
         endIntro();
       }
