@@ -10,12 +10,18 @@ const initIntro = () => {
 
   document.body.classList.add('intro-active');
 
-  // 根据视口选择视频
+  // 立即预加载背景图
   const isMobile = window.innerWidth <= 768;
+  const bgImage = isMobile ? './assets/背景图手机端.png' : './assets/背景图电脑.png';
+  const bgPreload = new Image();
+  bgPreload.src = bgImage;
+
+  // 根据视口选择视频
   source.src = isMobile ? './assets/alibarbar手机.mp4' : './assets/alibarbar电脑.mp4';
   video.load();
 
   let videoStarted = false;
+  let videoPlayed = false;
 
   // 视频就绪后播放
   video.addEventListener('canplay', () => {
@@ -24,7 +30,9 @@ const initIntro = () => {
       const playPromise = video.play();
 
       if (playPromise !== undefined) {
-        playPromise.catch(() => {
+        playPromise.then(() => {
+          videoPlayed = true;
+        }).catch(() => {
           // 自动播放失败，直接结束开场
           console.log('Autoplay blocked, skipping intro');
           endIntro();
@@ -36,16 +44,24 @@ const initIntro = () => {
   // 视频结束
   video.addEventListener('ended', endIntro, { once: true });
 
-  // 加载失败或超时处理
+  // 加载失败处理
   video.addEventListener('error', () => {
     console.log('Video load error, skipping intro');
     endIntro();
   }, { once: true });
 
-  // 6秒超时保护（缩短超时时间）
+  // 3秒超时保护 - 如果视频还没开始播放就跳过
+  setTimeout(() => {
+    if (!videoPlayed && document.body.classList.contains('intro-active')) {
+      console.log('Intro timeout (3s), skipping');
+      endIntro();
+    }
+  }, 3000);
+
+  // 6秒最大超时保护
   setTimeout(() => {
     if (document.body.classList.contains('intro-active')) {
-      console.log('Intro timeout, skipping');
+      console.log('Intro max timeout (6s), forcing end');
       endIntro();
     }
   }, 6000);
@@ -54,8 +70,13 @@ const initIntro = () => {
     screen.classList.add('ended');
     document.body.classList.remove('intro-active');
 
-    // 启动首屏背景
-    startHeroVideo();
+    // 确保背景图立即显示
+    const hero = document.querySelector('.hero');
+    if (hero) {
+      hero.style.backgroundImage = `url('${bgImage}')`;
+      hero.style.backgroundSize = 'cover';
+      hero.style.backgroundPosition = 'center';
+    }
 
     // 1秒后移除开场遮罩
     setTimeout(() => screen.remove(), 1000);
