@@ -4,9 +4,10 @@
 const initIntro = () => {
   const screen = document.querySelector('[data-intro]');
   const video = document.querySelector('[data-intro-video]');
-  const source = video?.querySelector('[data-video-src]');
+  const sourceWebm = video?.querySelector('[data-video-src-webm]');
+  const sourceMp4 = video?.querySelector('[data-video-src-mp4]');
 
-  if (!screen || !video || !source) {
+  if (!screen || !video || !sourceWebm || !sourceMp4) {
     document.body.classList.remove('intro-active');
     return;
   }
@@ -19,8 +20,10 @@ const initIntro = () => {
   const bgPreload = new Image();
   bgPreload.src = bgImage;
 
-  // 根据视口选择视频
-  source.src = isMobile ? './assets/alibarbar手机.mp4' : './assets/alibarbar电脑.mp4';
+  // 根据视口选择视频 - 同时提供WebM和MP4
+  const videoBase = isMobile ? './assets/alibarbar手机' : './assets/alibarbar电脑';
+  sourceWebm.src = `${videoBase}.webm`;
+  sourceMp4.src = `${videoBase}.mp4`;
   video.load();
 
   let introEnded = false;
@@ -66,21 +69,21 @@ const initIntro = () => {
     endIntro();
   }, { once: true });
 
-  // 2秒快速超时 - 视频没开始就跳过
+  // 3秒超时 - 给视频更多加载时间
   setTimeout(() => {
     if (!videoPlayed && !introEnded) {
-      console.log('Quick timeout (2s) - video not playing');
+      console.log('Timeout (3s) - video not playing');
       endIntro();
     }
-  }, 2000);
+  }, 3000);
 
-  // 5秒最大超时
+  // 7秒最大超时
   setTimeout(() => {
     if (!introEnded) {
-      console.log('Max timeout (5s)');
+      console.log('Max timeout (7s)');
       endIntro();
     }
-  }, 5000);
+  }, 7000);
 };
 
 // 首屏背景视频（定格循环）
