@@ -261,21 +261,35 @@ body:not(.intro-active) .hero-content {
   display: flex;
   gap: 3rem;
   font-size: 0.95rem;
-  padding: 1.5rem 2rem;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(201, 169, 97, 0.2);
-  border-radius: 4px;
+  padding: 0;
+  background: transparent;
+  backdrop-filter: none;
+  border: none;
+  border-radius: 0;
   max-width: max-content;
+}
+
+.hero-stats div {
+  position: relative;
+  padding-left: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-stats div::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 20px;
+  background: var(--gold);
+  border-radius: 2px;
 }
 
 .hero-stats strong {
   color: var(--gold);
   font-weight: 600;
-}
-
-.hero-stats div {
-  color: rgba(255, 255, 255, 0.9);
 }
 
 /* 产品设计展示 */
