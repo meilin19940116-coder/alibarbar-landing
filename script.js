@@ -2,6 +2,25 @@
 const SHOP_URL = 'https://ausvape-b.shopyys.net/collections/all';
 const AGE_GATE_KEY = 'alibarbar_age_confirmed';
 
+const readAgeConfirmation = () => {
+  try {
+    return window.localStorage.getItem(AGE_GATE_KEY) === 'yes';
+  } catch (error) {
+    // Some Safari privacy modes expose localStorage but reject reads.
+    console.warn('Age confirmation storage is unavailable; using this session only.', error);
+    return false;
+  }
+};
+
+const writeAgeConfirmation = () => {
+  try {
+    window.localStorage.setItem(AGE_GATE_KEY, 'yes');
+  } catch (error) {
+    // The gate still works for the current session when persistence is blocked.
+    console.warn('Age confirmation could not be persisted.', error);
+  }
+};
+
 // Lottie 烟雾动画
 const setupLottieSmoke = () => {
   if (typeof lottie === 'undefined') {
@@ -56,14 +75,14 @@ const setupAgeGate = () => {
     document.body.classList.remove('is-locked');
   };
 
-  if (window.localStorage.getItem(AGE_GATE_KEY) === 'yes') {
+  if (readAgeConfirmation()) {
     hideGate();
   } else {
     document.body.classList.add('is-locked');
   }
 
   confirm.addEventListener('click', () => {
-    window.localStorage.setItem(AGE_GATE_KEY, 'yes');
+    writeAgeConfirmation();
     track('age_gate_confirmed');
     hideGate();
   });
@@ -97,6 +116,7 @@ const setupNavigation = () => {
 
 const setupReveal = () => {
   const items = document.querySelectorAll('.reveal');
+  document.body.classList.add('reveal-enabled');
   if (!('IntersectionObserver' in window)) {
     items.forEach((item) => item.classList.add('is-visible'));
     return;
@@ -142,37 +162,56 @@ const setupHeroVideo = () => {
   const overlayVideo = document.querySelector('[data-intro-video]');
   const overlay = document.querySelector('[data-intro-overlay]');
   const bgVideo = document.querySelector('[data-hero-video-bg]');
-  const mobileEnterBtn = document.querySelector('[data-mobile-enter]');
 
   if (!overlayVideo || !overlay) return;
 
-  // 检测移动设备和iOS版本
+  // Only show the full-screen layer after this initializer is ready. If the
+  // script is blocked, the static page remains usable instead of staying black.
+  document.documentElement.classList.add('js-ready');
+
+  // 检测移动设备
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const iOSVersion = isIOS ? parseInt((navigator.userAgent.match(/OS (\d+)_/) || [])[1], 10) : 0;
 
-  // 标记视频正在播放
-  document.body.classList.add('intro-playing');
-
-  // 预加载背景视频到最后一帧
+  // 背景视频只是增强层，海报和 CSS 背景始终可用。
   if (bgVideo) {
+    bgVideo.addEventListener('seeked', () => bgVideo.classList.add('is-ready'));
+    bgVideo.addEventListener('error', () => bgVideo.classList.remove('is-ready'));
     bgVideo.addEventListener('loadedmetadata', () => {
-      bgVideo.currentTime = bgVideo.duration - 0.1;
-      bgVideo.pause();
+      if (Number.isFinite(bgVideo.duration) && bgVideo.duration > 0) {
+        try {
+          bgVideo.currentTime = bgVideo.duration - 0.1;
+          bgVideo.pause();
+        } catch (error) {
+          console.warn('Hero background video could not seek to its final frame.', error);
+        }
+      }
     });
-    bgVideo.load();
+    bgVideo.preload = 'none';
+    bgVideo.pause();
   }
 
+  // Mobile Safari can refuse autoplay or delay a media request for a long
+  // time. The landing page is usable without the intro, so skip that layer on
+  // mobile and keep the poster as the hero background.
+  if (isMobile) {
+    document.body.classList.remove('intro-playing', 'intro-transitioning');
+    document.body.classList.add('intro-ended');
+    overlay.classList.add('is-ended');
+    overlayVideo.pause();
+    return;
+  }
+
+  // 标记视频正在播放（桌面端）
+  document.body.classList.add('intro-playing');
+
+  let introEnding = false;
   const endIntro = () => {
+    if (introEnding) return;
+    introEnding = true;
     // 确保转场已经开始
     if (!document.body.classList.contains('intro-transitioning')) {
       document.body.classList.add('intro-transitioning');
       overlay.classList.add('is-fading');
-    }
-
-    // 隐藏移动端按钮
-    if (mobileEnterBtn) {
-      mobileEnterBtn.style.display = 'none';
     }
 
     // 延迟后完全移除遮罩
@@ -181,55 +220,24 @@ const setupHeroVideo = () => {
       document.body.classList.add('intro-ended');
       overlay.classList.add('is-ended');
 
+      // 在开场结束后请求第二个视频，避免首屏重复争抢带宽。
+      if (bgVideo) bgVideo.load();
+
       // 初始化烟雾效果
-      if (typeof window.initSmokeBackground === 'function') {
-        console.log('Initializing WebGL smoke...');
-        window.initSmokeBackground('webgl-smoke', '#d8a84e');
-      } else {
-        console.warn('initSmokeBackground function not found');
+      try {
+        if (typeof window.initSmokeBackground === 'function') {
+          console.log('Initializing WebGL smoke...');
+          window.initSmokeBackground('webgl-smoke', '#d8a84e');
+        } else {
+          console.warn('initSmokeBackground function not found');
+        }
+      } catch (error) {
+        console.warn('WebGL smoke is unavailable; continuing with CSS effects.', error);
       }
     }, 1500);
 
     track('intro_video_ended');
   };
-
-  // 移动端特殊处理
-  if (isMobile) {
-    console.log('Mobile device detected, iOS version:', iOSVersion);
-
-    // iOS 17+ 直接显示按钮，其他设备等3秒
-    const buttonDelay = (isIOS && iOSVersion >= 17) ? 500 : 3000;
-
-    console.log(`Will show button after ${buttonDelay}ms if video doesn't play`);
-
-    // 等待后如果视频没播放，显示进入按钮
-    const showButtonTimeout = setTimeout(() => {
-      if (overlayVideo.paused || overlayVideo.readyState < 2) {
-        console.log('Video not playing, showing enter button');
-        if (mobileEnterBtn) {
-          mobileEnterBtn.style.display = 'block';
-          document.body.classList.add('show-mobile-btn');
-        }
-      }
-    }, buttonDelay);
-
-    // 如果视频成功播放，清除按钮显示
-    overlayVideo.addEventListener('playing', () => {
-      clearTimeout(showButtonTimeout);
-      if (mobileEnterBtn) {
-        mobileEnterBtn.style.display = 'none';
-        document.body.classList.remove('show-mobile-btn');
-      }
-    }, { once: true });
-
-    // 点击按钮进入
-    if (mobileEnterBtn) {
-      mobileEnterBtn.addEventListener('click', () => {
-        console.log('Enter button clicked');
-        endIntro();
-      });
-    }
-  }
 
   // 监听视频播放进度，在快结束时触发转场
   overlayVideo.addEventListener('timeupdate', () => {
@@ -246,41 +254,33 @@ const setupHeroVideo = () => {
 
   overlayVideo.addEventListener('error', () => {
     console.warn('Intro video failed to load');
-    // 移动端显示按钮
-    if (isMobile && mobileEnterBtn) {
-      mobileEnterBtn.style.display = 'block';
-      document.body.classList.add('show-mobile-btn');
-    } else {
-      // 桌面端直接跳过
-      endIntro();
-    }
+    endIntro();
   });
 
   // 如果视频加载失败或无法播放
   overlayVideo.addEventListener('loadedmetadata', () => {
     if (overlayVideo.duration === 0 || isNaN(overlayVideo.duration)) {
-      if (isMobile && mobileEnterBtn) {
-        mobileEnterBtn.style.display = 'block';
-        document.body.classList.add('show-mobile-btn');
-      } else {
-        endIntro();
-      }
+      endIntro();
     }
   });
 
-  // 最终超时保护 - 15秒
+  // 桌面端仅在脚本准备好之后启动视频；拒绝自动播放时立即降级。
+  try {
+    const playAttempt = overlayVideo.play();
+    if (playAttempt && typeof playAttempt.catch === 'function') {
+      playAttempt.catch(() => endIntro());
+    }
+  } catch (error) {
+    endIntro();
+  }
+
+  // 最终超时保护 - 8秒
   setTimeout(() => {
     if (!document.body.classList.contains('intro-ended')) {
       console.warn('Intro video timeout');
-      // 移动端显示按钮而不是直接跳过
-      if (isMobile && mobileEnterBtn && mobileEnterBtn.style.display !== 'block') {
-        mobileEnterBtn.style.display = 'block';
-        document.body.classList.add('show-mobile-btn');
-      } else if (!isMobile) {
-        endIntro();
-      }
+      endIntro();
     }
-  }, 15000);
+  }, 8000);
 };
 
 document.addEventListener('DOMContentLoaded', () => {
