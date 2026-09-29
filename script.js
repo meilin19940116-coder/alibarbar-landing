@@ -69,21 +69,21 @@ const initIntro = () => {
     endIntro();
   }, { once: true });
 
-  // 3秒超时 - 给视频更多加载时间
+  // 5秒超时 - 给慢网络更多时间
   setTimeout(() => {
     if (!videoPlayed && !introEnded) {
-      console.log('Timeout (3s) - video not playing');
+      console.log('Timeout (5s) - video not playing, slow network?');
       endIntro();
     }
-  }, 3000);
+  }, 5000);
 
-  // 7秒最大超时
+  // 10秒最大超时
   setTimeout(() => {
     if (!introEnded) {
-      console.log('Max timeout (7s)');
+      console.log('Max timeout (10s)');
       endIntro();
     }
-  }, 7000);
+  }, 10000);
 };
 
 // 首屏背景视频（定格循环）
