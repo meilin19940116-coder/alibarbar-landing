@@ -6,7 +6,10 @@ const initIntro = () => {
   const video = document.querySelector('[data-intro-video]');
   const source = video?.querySelector('[data-video-src]');
 
-  if (!screen || !video || !source) return;
+  if (!screen || !video || !source) {
+    document.body.classList.remove('intro-active');
+    return;
+  }
 
   document.body.classList.add('intro-active');
 
@@ -20,53 +23,13 @@ const initIntro = () => {
   source.src = isMobile ? './assets/alibarbar手机.mp4' : './assets/alibarbar电脑.mp4';
   video.load();
 
-  let videoStarted = false;
+  let introEnded = false;
   let videoPlayed = false;
 
-  // 视频就绪后播放
-  video.addEventListener('canplay', () => {
-    if (!videoStarted) {
-      videoStarted = true;
-      const playPromise = video.play();
-
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          videoPlayed = true;
-        }).catch(() => {
-          // 自动播放失败，直接结束开场
-          console.log('Autoplay blocked, skipping intro');
-          endIntro();
-        });
-      }
-    }
-  }, { once: true });
-
-  // 视频结束
-  video.addEventListener('ended', endIntro, { once: true });
-
-  // 加载失败处理
-  video.addEventListener('error', () => {
-    console.log('Video load error, skipping intro');
-    endIntro();
-  }, { once: true });
-
-  // 3秒超时保护 - 如果视频还没开始播放就跳过
-  setTimeout(() => {
-    if (!videoPlayed && document.body.classList.contains('intro-active')) {
-      console.log('Intro timeout (3s), skipping');
-      endIntro();
-    }
-  }, 3000);
-
-  // 6秒最大超时保护
-  setTimeout(() => {
-    if (document.body.classList.contains('intro-active')) {
-      console.log('Intro max timeout (6s), forcing end');
-      endIntro();
-    }
-  }, 6000);
-
   function endIntro() {
+    if (introEnded) return;
+    introEnded = true;
+
     screen.classList.add('ended');
     document.body.classList.remove('intro-active');
 
@@ -74,13 +37,50 @@ const initIntro = () => {
     const hero = document.querySelector('.hero');
     if (hero) {
       hero.style.backgroundImage = `url('${bgImage}')`;
-      hero.style.backgroundSize = 'cover';
-      hero.style.backgroundPosition = 'center';
     }
 
     // 1秒后移除开场遮罩
     setTimeout(() => screen.remove(), 1000);
   }
+
+  // 视频就绪后播放
+  video.addEventListener('canplay', () => {
+    const playPromise = video.play();
+
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        videoPlayed = true;
+      }).catch((error) => {
+        console.log('Autoplay failed:', error.message);
+        endIntro();
+      });
+    }
+  }, { once: true });
+
+  // 视频结束
+  video.addEventListener('ended', endIntro, { once: true });
+
+  // 加载失败处理
+  video.addEventListener('error', (e) => {
+    console.log('Video error:', e);
+    endIntro();
+  }, { once: true });
+
+  // 2秒快速超时 - 视频没开始就跳过
+  setTimeout(() => {
+    if (!videoPlayed && !introEnded) {
+      console.log('Quick timeout (2s) - video not playing');
+      endIntro();
+    }
+  }, 2000);
+
+  // 5秒最大超时
+  setTimeout(() => {
+    if (!introEnded) {
+      console.log('Max timeout (5s)');
+      endIntro();
+    }
+  }, 5000);
 };
 
 // 首屏背景视频（定格循环）
