@@ -1067,6 +1067,65 @@ body:not(.intro-active) .hero-content {
     border-bottom: 1px solid rgba(201, 169, 97, 0.15);
   }
 
+  /* 产品设计响应式 */
+  .product-design {
+    padding: 6rem 5%;
+  }
+
+  .design-showcase {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .design-item:nth-child(1),
+  .design-item:nth-child(2),
+  .design-item:nth-child(3),
+  .design-item:nth-child(4) {
+    grid-column: 1;
+    margin-top: 0 !important;
+  }
+
+  .design-item {
+    padding: 2rem;
+  }
+
+  .design-image {
+    height: 240px;
+  }
+
+  .design-number {
+    font-size: 2rem;
+    top: 1rem;
+    right: 1rem;
+  }
+
+  /* 使用场景响应式 */
+  .lifestyle {
+    padding: 6rem 5%;
+  }
+
+  .lifestyle-header h2 {
+    font-size: 2.5rem;
+  }
+
+  .lifestyle-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .lifestyle-card:nth-child(2),
+  .lifestyle-card:nth-child(4) {
+    margin-top: 0;
+  }
+
+  .lifestyle-image {
+    aspect-ratio: 3/4;
+  }
+
+  .lifestyle-overlay h3 {
+    font-size: 1.5rem;
+  }
+
   .order-box {
     padding: 3rem 2rem;
   }
