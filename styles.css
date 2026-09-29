@@ -7,6 +7,7 @@
   --muted: rgba(255, 255, 255, .62);
   --line: rgba(255, 255, 255, .13);
   --max: 1240px;
+  --hero-poster: url("./assets/背景图电脑.png");
   --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color-scheme: dark;
@@ -18,7 +19,6 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { min-width: 320px; margin: 0; overflow-x: hidden; background: var(--ink); }
-body.is-locked { overflow: hidden; }
 body.intro-playing { overflow: hidden; }
 body.intro-playing .site-header,
 body.intro-playing main,
@@ -45,9 +45,10 @@ body.intro-ended .site-footer { animation: fadeInContent 1.2s ease 0.3s forwards
 }
 a { color: inherit; text-decoration: none; }
 button { color: inherit; font: inherit; }
-.intro-video-overlay { position: fixed; z-index: 9999; inset: 0; background: #000 url("./assets/intro-poster.jpg") center / cover no-repeat; opacity: 0; pointer-events: none; overflow: hidden; transition: opacity .25s ease; }
+.intro-video-overlay { position: fixed; z-index: 9999; inset: 0; background: #000 var(--hero-poster) center / cover no-repeat; opacity: 0; pointer-events: none; overflow: hidden; transition: opacity .25s ease; }
 html.js-ready .intro-video-overlay { opacity: 1; pointer-events: auto; }
-.intro-video-overlay.is-fading { animation: fadeOutOverlay 2s ease forwards; }
+.intro-video-overlay.is-fading { animation: fadeOutOverlay 2s ease forwards; pointer-events: none; }
+html.js-ready .intro-video-overlay.is-fading { pointer-events: none; }
 html.js-ready .intro-video-overlay.is-ended { opacity: 0; pointer-events: none; }
 .intro-video { width: 100%; height: 100%; object-fit: cover; }
 
@@ -185,10 +186,8 @@ body.intro-ended #webgl-smoke { opacity: 0.4; }
 .menu-toggle { display: none; width: 38px; height: 38px; padding: 8px; border: 1px solid var(--line); border-radius: 50%; background: transparent; cursor: pointer; }
 .menu-toggle span { display: block; width: 100%; height: 1px; margin: 5px 0; background: #fff; transition: transform .25s ease; }
 
-.hero { position: relative; display: flex; align-items: center; justify-content: flex-start; min-height: min(860px, 100vh); padding: 150px max(32px, calc((100vw - var(--max)) / 2)) 86px; overflow: hidden; isolation: isolate; background: radial-gradient(ellipse at 72% 48%, rgba(216,168,78,.18), transparent 42%), url("./assets/intro-poster.jpg") center / cover no-repeat, #050708; }
+.hero { position: relative; display: flex; align-items: center; justify-content: flex-start; min-height: min(860px, 100vh); padding: 150px max(32px, calc((100vw - var(--max)) / 2)) 86px; overflow: hidden; isolation: isolate; background: radial-gradient(ellipse at 72% 48%, rgba(216,168,78,.18), transparent 42%), var(--hero-poster) center / cover no-repeat, #050708; }
 .hero::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 50%, rgba(216,168,78,.08), transparent 60%); pointer-events: none; z-index: 2; }
-.hero-video-bg { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .6s ease; }
-.hero-video-bg.is-ready { opacity: .94; }
 .hero-grid { position: absolute; z-index: 2; inset: 0; opacity: .17; background-image: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px); background-size: 72px 72px; mask-image: linear-gradient(90deg, #000, transparent 90%); }
 .smoke { position: absolute; z-index: 2; width: 420px; height: 150px; border-radius: 50%; filter: blur(54px); opacity: .3; pointer-events: none; background: rgba(216,168,78,.35); mix-blend-mode: screen; animation: drift 14s ease-in-out infinite alternate; }
 .smoke--one { top: 28%; right: 6%; transform: rotate(-18deg); }
@@ -317,19 +316,9 @@ body.intro-ended #webgl-smoke { opacity: 0.4; }
 .footer-link { color: var(--gold); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
 .footer-bottom { display: flex; justify-content: space-between; gap: 20px; padding-top: 20px; border-top: 1px solid var(--line); color: rgba(255,255,255,.4); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
 
-.age-gate { position: fixed; z-index: 50; inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(2,4,5,.84); backdrop-filter: blur(18px); transition: opacity .35s ease, visibility .35s ease; }
-.age-gate.is-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
-.age-gate-card { width: min(440px, 100%); padding: 52px 44px 45px; border: 1px solid rgba(216,168,78,.4); text-align: center; background: linear-gradient(145deg, #121819, #07090a); box-shadow: 0 30px 90px rgba(0,0,0,.45); }
-.age-gate-mark { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto 30px; border: 1px solid var(--gold); border-radius: 50%; color: var(--gold); font-family: var(--serif); font-size: 18px; }
-.age-gate-card .eyebrow { justify-content: center; }
-.age-gate-card h2 { margin: 0; font-family: var(--serif); font-size: 57px; font-weight: 400; line-height: .85; }
-.age-gate-card h2 em { color: var(--gold); font-style: italic; }
-.age-gate-card > p:not(.eyebrow) { margin: 25px auto 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
-.age-gate-actions { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-top: 30px; }
-
 .reveal { opacity: 1; transform: none; transition: opacity .7s ease, transform .7s ease; }
 body.reveal-enabled .reveal { opacity: 0; transform: translateY(22px); }
-.reveal.is-visible { opacity: 1; transform: none; }
+body.reveal-enabled .reveal.is-visible { opacity: 1; transform: none; }
 .reveal--delay { transition-delay: .12s; }
 .reveal--delay-2 { transition-delay: .22s; }
 .reveal--delay-3 { transition-delay: .32s; }
@@ -347,8 +336,7 @@ body.reveal-enabled .reveal { opacity: 0; transform: translateY(22px); }
 }
 
 @media (max-width: 768px) {
-  .intro-video-overlay { display: none; }
-  .hero-video-bg { display: none; }
+  :root { --hero-poster: url("./assets/背景图手机端.png"); }
   body.intro-ended .site-header,
   body.intro-ended main,
   body.intro-ended .site-footer { animation: none; opacity: 1; }
@@ -403,7 +391,6 @@ body.reveal-enabled .reveal { opacity: 0; transform: translateY(22px); }
   .footer-main, .footer-bottom { display: grid; justify-content: stretch; }
   .footer-main { gap: 18px; }
   .footer-bottom { gap: 10px; }
-  .age-gate-card { padding: 40px 25px 35px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

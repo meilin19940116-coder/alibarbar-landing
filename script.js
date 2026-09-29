@@ -1,25 +1,5 @@
 /* Update this URL when the final Shopyy product or collection page is ready. */
 const SHOP_URL = 'https://ausvape-b.shopyys.net/collections/all';
-const AGE_GATE_KEY = 'alibarbar_age_confirmed';
-
-const readAgeConfirmation = () => {
-  try {
-    return window.localStorage.getItem(AGE_GATE_KEY) === 'yes';
-  } catch (error) {
-    // Some Safari privacy modes expose localStorage but reject reads.
-    console.warn('Age confirmation storage is unavailable; using this session only.', error);
-    return false;
-  }
-};
-
-const writeAgeConfirmation = () => {
-  try {
-    window.localStorage.setItem(AGE_GATE_KEY, 'yes');
-  } catch (error) {
-    // The gate still works for the current session when persistence is blocked.
-    console.warn('Age confirmation could not be persisted.', error);
-  }
-};
 
 // Lottie 烟雾动画
 const setupLottieSmoke = () => {
@@ -61,37 +41,6 @@ const setShopLinks = () => {
     link.href = SHOP_URL;
     link.target = '_blank';
     link.rel = 'noopener';
-  });
-};
-
-const setupAgeGate = () => {
-  const gate = document.querySelector('[data-age-gate]');
-  const confirm = document.querySelector('[data-age-confirm]');
-  const deny = document.querySelector('[data-age-deny]');
-  if (!gate || !confirm || !deny) return;
-
-  const hideGate = () => {
-    gate.classList.add('is-hidden');
-    document.body.classList.remove('is-locked');
-  };
-
-  if (readAgeConfirmation()) {
-    hideGate();
-  } else {
-    document.body.classList.add('is-locked');
-  }
-
-  confirm.addEventListener('click', () => {
-    writeAgeConfirmation();
-    track('age_gate_confirmed');
-    hideGate();
-  });
-
-  deny.addEventListener('click', () => {
-    track('age_gate_denied');
-    gate.querySelector('h2').textContent = 'Please return when you are of legal age.';
-    confirm.hidden = true;
-    deny.textContent = 'Close';
   });
 };
 
@@ -161,68 +110,42 @@ const setupTracking = () => {
 const setupHeroVideo = () => {
   const overlayVideo = document.querySelector('[data-intro-video]');
   const overlay = document.querySelector('[data-intro-overlay]');
-  const bgVideo = document.querySelector('[data-hero-video-bg]');
 
   if (!overlayVideo || !overlay) return;
+
+  // 与 CSS 的 768px 断点保持一致；进站时只请求一份视频，旋转屏幕不重播。
+  const mediaVariant = window.matchMedia('(max-width: 768px)').matches ? 'mobile' : 'desktop';
+  overlayVideo.poster = overlayVideo.dataset[`${mediaVariant}Poster`];
 
   // Only show the full-screen layer after this initializer is ready. If the
   // script is blocked, the static page remains usable instead of staying black.
   document.documentElement.classList.add('js-ready');
 
-  // 检测移动设备
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-
-  // 背景视频只是增强层，海报和 CSS 背景始终可用。
-  if (bgVideo) {
-    bgVideo.addEventListener('seeked', () => bgVideo.classList.add('is-ready'));
-    bgVideo.addEventListener('error', () => bgVideo.classList.remove('is-ready'));
-    bgVideo.addEventListener('loadedmetadata', () => {
-      if (Number.isFinite(bgVideo.duration) && bgVideo.duration > 0) {
-        try {
-          bgVideo.currentTime = bgVideo.duration - 0.1;
-          bgVideo.pause();
-        } catch (error) {
-          console.warn('Hero background video could not seek to its final frame.', error);
-        }
-      }
-    });
-    bgVideo.preload = 'none';
-    bgVideo.pause();
-  }
-
-  // Mobile Safari can refuse autoplay or delay a media request for a long
-  // time. The landing page is usable without the intro, so skip that layer on
-  // mobile and keep the poster as the hero background.
-  if (isMobile) {
-    document.body.classList.remove('intro-playing', 'intro-transitioning');
-    document.body.classList.add('intro-ended');
-    overlay.classList.add('is-ended');
-    overlayVideo.pause();
-    return;
-  }
-
-  // 标记视频正在播放（桌面端）
+  // 标记视频正在播放；视频结束后只保留英雄区的静态尾帧图。
   document.body.classList.add('intro-playing');
 
   let introEnding = false;
   const endIntro = () => {
     if (introEnding) return;
     introEnding = true;
-    // 确保转场已经开始
+    overlayVideo.pause();
+    // 先释放滚动和页面交互，再让遮罩继续淡出；不要让视觉转场阻塞页面。
+    document.body.classList.remove('intro-playing');
+    document.body.classList.add('intro-ended');
+
     if (!document.body.classList.contains('intro-transitioning')) {
       document.body.classList.add('intro-transitioning');
-      overlay.classList.add('is-fading');
     }
+    overlay.classList.add('is-fading');
 
-    // 延迟后完全移除遮罩
+    // 遮罩动画不再占用点击和滚动；动画结束后从文档层移除。
     setTimeout(() => {
-      document.body.classList.remove('intro-playing');
-      document.body.classList.add('intro-ended');
       overlay.classList.add('is-ended');
+      document.body.classList.remove('intro-transitioning');
+    }, 2000);
 
-      // 在开场结束后请求第二个视频，避免首屏重复争抢带宽。
-      if (bgVideo) bgVideo.load();
-
+    // 烟雾初始化放到浏览器空闲时，避免和结束事件争抢主线程。
+    const initSmoke = () => {
       // 初始化烟雾效果
       try {
         if (typeof window.initSmokeBackground === 'function') {
@@ -234,7 +157,12 @@ const setupHeroVideo = () => {
       } catch (error) {
         console.warn('WebGL smoke is unavailable; continuing with CSS effects.', error);
       }
-    }, 1500);
+    };
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(initSmoke, { timeout: 1500 });
+    } else {
+      setTimeout(initSmoke, 350);
+    }
 
     track('intro_video_ended');
   };
@@ -264,8 +192,10 @@ const setupHeroVideo = () => {
     }
   });
 
-  // 桌面端仅在脚本准备好之后启动视频；拒绝自动播放时立即降级。
+  // 脚本准备好后启动开场视频；拒绝自动播放时立即降级到尾帧图。
   try {
+    overlayVideo.src = overlayVideo.dataset[`${mediaVariant}Src`];
+    overlayVideo.muted = true;
     const playAttempt = overlayVideo.play();
     if (playAttempt && typeof playAttempt.catch === 'function') {
       playAttempt.catch(() => endIntro());
@@ -285,7 +215,6 @@ const setupHeroVideo = () => {
 
 document.addEventListener('DOMContentLoaded', () => {
   setShopLinks();
-  setupAgeGate();
   setupNavigation();
   setupHeroVideo();
   setupReveal();
