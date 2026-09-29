@@ -692,6 +692,10 @@ body:not(.intro-active) .hero-content {
     padding: 1rem 5%;
   }
 
+  .btn-header {
+    display: none;
+  }
+
   .nav-toggle {
     display: flex;
   }
