@@ -274,6 +274,104 @@ body:not(.intro-active) .hero-content {
   color: rgba(255, 255, 255, 0.9);
 }
 
+/* 产品设计展示 */
+.product-showcase {
+  padding: 8rem 5%;
+  background: linear-gradient(180deg, #000 0%, rgba(201, 169, 97, 0.03) 50%, #000 100%);
+  position: relative;
+}
+
+.product-showcase::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.3;
+}
+
+.showcase-header {
+  text-align: center;
+  margin-bottom: 6rem;
+}
+
+.showcase-header h2 {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 300;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+
+.showcase-header p {
+  color: var(--text-dim);
+  font-size: 1.1rem;
+}
+
+.showcase-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+
+.showcase-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease;
+}
+
+.showcase-item.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.showcase-reverse {
+  direction: rtl;
+}
+
+.showcase-reverse > * {
+  direction: ltr;
+}
+
+.showcase-img {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(201, 169, 97, 0.03);
+  padding: 2rem;
+}
+
+.showcase-img img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.showcase-item:hover .showcase-img img {
+  transform: scale(1.05);
+}
+
+.showcase-text h3 {
+  font-size: 1.8rem;
+  color: var(--gold);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.showcase-text p {
+  color: var(--text-dim);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
 /* 口味展示 */
 .flavours {
   padding: 8rem 5% 6rem;
