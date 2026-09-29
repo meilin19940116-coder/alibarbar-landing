@@ -1,120 +1,36 @@
 // ALIBARBAR 9000 - 简洁高转化脚本
 
-// 开场视频控制
+// 纯CSS开场动画控制
 const initIntro = () => {
   const screen = document.querySelector('[data-intro]');
-  const video = document.querySelector('[data-intro-video]');
-  const sourceWebm = video?.querySelector('[data-video-src-webm]');
-  const sourceMp4 = video?.querySelector('[data-video-src-mp4]');
 
-  console.log('=== Video Intro Debug ===');
-  console.log('Device:', navigator.userAgent);
-  console.log('Screen:', screen ? 'found' : 'missing');
-  console.log('Video:', video ? 'found' : 'missing');
-
-  if (!screen || !video || !sourceWebm || !sourceMp4) {
-    console.log('Missing elements, skipping intro');
+  if (!screen) {
     document.body.classList.remove('intro-active');
     return;
   }
 
   document.body.classList.add('intro-active');
 
-  // 立即预加载背景图
+  // 预加载背景图
   const isMobile = window.innerWidth <= 768;
   const bgImage = isMobile ? './assets/背景图手机端.png' : './assets/背景图电脑.png';
   const bgPreload = new Image();
-  bgPreload.onload = () => console.log('Background preloaded');
-  bgPreload.onerror = () => console.log('Background preload failed');
   bgPreload.src = bgImage;
 
-  // 根据视口选择视频 - 同时提供WebM和MP4
-  const videoBase = isMobile ? './assets/alibarbar手机' : './assets/alibarbar电脑';
-  sourceWebm.src = `${videoBase}.webm`;
-  sourceMp4.src = `${videoBase}.mp4`;
-
-  console.log('Video sources:', sourceWebm.src, sourceMp4.src);
-
-  video.load();
-
-  let introEnded = false;
-  let videoPlayed = false;
-  let canplayFired = false;
-
-  function endIntro() {
-    if (introEnded) return;
-    introEnded = true;
-
-    console.log('Ending intro, videoPlayed:', videoPlayed);
-
+  // 2.5秒后结束开场动画
+  setTimeout(() => {
     screen.classList.add('ended');
     document.body.classList.remove('intro-active');
 
-    // 确保背景图立即显示
+    // 确保背景图显示
     const hero = document.querySelector('.hero');
     if (hero) {
       hero.style.backgroundImage = `url('${bgImage}')`;
-      console.log('Background set to:', bgImage);
     }
 
-    // 1秒后移除开场遮罩
+    // 1秒后移除开场元素
     setTimeout(() => screen.remove(), 1000);
-  }
-
-  // 监听所有可能的视频事件
-  video.addEventListener('loadstart', () => console.log('Video: loadstart'));
-  video.addEventListener('loadedmetadata', () => console.log('Video: loadedmetadata'));
-  video.addEventListener('loadeddata', () => console.log('Video: loadeddata'));
-
-  // 视频就绪后播放
-  video.addEventListener('canplay', () => {
-    if (canplayFired) return;
-    canplayFired = true;
-
-    console.log('Video: canplay');
-    const playPromise = video.play();
-
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
-        videoPlayed = true;
-        console.log('Video: playing successfully');
-      }).catch((error) => {
-        console.log('Autoplay failed:', error.message, error.name);
-        endIntro();
-      });
-    }
-  }, { once: true });
-
-  // 视频结束
-  video.addEventListener('ended', () => {
-    console.log('Video: ended');
-    endIntro();
-  }, { once: true });
-
-  // 加载失败处理
-  video.addEventListener('error', (e) => {
-    console.log('Video error:', e, video.error);
-    if (video.error) {
-      console.log('Error code:', video.error.code, 'Message:', video.error.message);
-    }
-    endIntro();
-  }, { once: true });
-
-  // 5秒超时 - 给慢网络更多时间
-  setTimeout(() => {
-    if (!videoPlayed && !introEnded) {
-      console.log('Timeout (5s) - canplayFired:', canplayFired, 'videoPlayed:', videoPlayed);
-      endIntro();
-    }
-  }, 5000);
-
-  // 10秒最大超时
-  setTimeout(() => {
-    if (!introEnded) {
-      console.log('Max timeout (10s)');
-      endIntro();
-    }
-  }, 10000);
+  }, 2500);
 };
 
 // 首屏背景视频（定格循环）
