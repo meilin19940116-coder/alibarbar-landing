@@ -155,10 +155,13 @@ body:not(.intro-active) .header {
   align-items: center;
   padding: 0 5%;
   overflow: hidden;
-  background-color: #000;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: #000 url('./assets/背景图电脑.png') center/cover no-repeat;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    background-image: url('./assets/背景图手机端.png');
+  }
 }
 
 .hero-bg-video {
