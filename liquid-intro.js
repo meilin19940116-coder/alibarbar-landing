@@ -1,24 +1,65 @@
-// 液体粒子汇聚开场动画
+// 液体流动汇聚成文字动画
 const initLiquidIntro = () => {
   const canvas = document.getElementById('liquid-canvas');
   const ctx = canvas.getContext('2d');
-  const logo = document.querySelector('[data-intro-logo]');
-  const text = document.querySelector('[data-intro-text]');
 
   // 设置canvas尺寸
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  // 粒子数组
-  const particles = [];
-  const particleCount = 200; // 200个金色粒子
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
 
+  // 创建文字轮廓点
+  function getTextPoints(text, fontSize, x, y) {
+    ctx.font = `900 ${fontSize}px Arial`;
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, x, y);
+
+    // 获取文字像素数据
+    const textWidth = ctx.measureText(text).width;
+    const imageData = ctx.getImageData(x - textWidth / 2 - 20, y - fontSize / 2 - 20, textWidth + 40, fontSize + 40);
+    const pixels = imageData.data;
+    const points = [];
+
+    // 采样文字边缘点
+    for (let py = 0; py < imageData.height; py += 3) {
+      for (let px = 0; px < imageData.width; px += 3) {
+        const i = (py * imageData.width + px) * 4;
+        if (pixels[i + 3] > 128) { // alpha > 128
+          points.push({
+            x: x - textWidth / 2 - 20 + px,
+            y: y - fontSize / 2 - 20 + py
+          });
+        }
+      }
+    }
+
+    return points;
+  }
+
+  // 清空画布，准备获取文字轮廓
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 获取"ALIBARBAR 9000"的轮廓点
+  const isMobile = window.innerWidth <= 768;
+  const brandSize = isMobile ? 40 : 80;
+  const modelSize = isMobile ? 80 : 160;
+  const gap = isMobile ? 60 : 100;
+
+  const brandPoints = getTextPoints('ALIBARBAR', brandSize, centerX - gap, centerY);
+  const modelPoints = getTextPoints('9000', modelSize, centerX + gap * 1.5, centerY);
+  const textPoints = [...brandPoints, ...modelPoints];
+
+  // 清空画布
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   // 粒子类
   class Particle {
-    constructor() {
-      // 从四周随机位置开始
+    constructor(targetPoint) {
+      // 从屏幕边缘随机位置开始
       const edge = Math.floor(Math.random() * 4);
       if (edge === 0) { // 上
         this.x = Math.random() * canvas.width;
@@ -34,20 +75,11 @@ const initLiquidIntro = () => {
         this.y = Math.random() * canvas.height;
       }
 
-      // 目标点（中心附近随机）
-      this.targetX = centerX + (Math.random() - 0.5) * 400;
-      this.targetY = centerY + (Math.random() - 0.5) * 200;
-
-      // 当前速度
-      this.vx = 0;
-      this.vy = 0;
-
-      // 大小和透明度
-      this.size = Math.random() * 4 + 2;
+      this.targetX = targetPoint.x;
+      this.targetY = targetPoint.y;
+      this.size = Math.random() * 3 + 2;
       this.opacity = 0;
-
-      // 延迟出现
-      this.delay = Math.random() * 30;
+      this.delay = Math.random() * 40;
       this.age = 0;
     }
 
@@ -55,30 +87,19 @@ const initLiquidIntro = () => {
       this.age++;
       if (this.age < this.delay) return;
 
-      // 计算到目标的方向
       const dx = this.targetX - this.x;
       const dy = this.targetY - this.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      if (distance > 5) {
-        // 流体效果：速度逐渐加快，接近目标时减速
-        const speed = Math.min(distance * 0.03, 8);
-        this.vx = (dx / distance) * speed;
-        this.vy = (dy / distance) * speed;
+      if (distance > 2) {
+        const speed = Math.min(distance * 0.05, 10);
+        this.x += (dx / distance) * speed + (Math.random() - 0.5) * 0.8;
+        this.y += (dy / distance) * speed + (Math.random() - 0.5) * 0.8;
 
-        // 添加液体波动效果
-        this.vx += (Math.random() - 0.5) * 0.5;
-        this.vy += (Math.random() - 0.5) * 0.5;
-
-        this.x += this.vx;
-        this.y += this.vy;
-
-        // 透明度渐增
-        if (this.opacity < 1) this.opacity += 0.02;
+        if (this.opacity < 1) this.opacity += 0.03;
       } else {
-        // 到达目标，轻微波动
-        this.x += (Math.random() - 0.5) * 0.3;
-        this.y += (Math.random() - 0.5) * 0.3;
+        this.x = this.targetX + (Math.random() - 0.5) * 0.5;
+        this.y = this.targetY + (Math.random() - 0.5) * 0.5;
         this.opacity = 1;
       }
     }
@@ -89,62 +110,37 @@ const initLiquidIntro = () => {
       ctx.save();
       ctx.globalAlpha = this.opacity;
 
-      // 金色渐变
-      const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+      const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 2);
       gradient.addColorStop(0, 'rgba(255, 223, 143, 1)');
-      gradient.addColorStop(0.5, 'rgba(201, 169, 97, 1)');
+      gradient.addColorStop(0.4, 'rgba(201, 169, 97, 1)');
       gradient.addColorStop(1, 'rgba(201, 169, 97, 0)');
 
       ctx.fillStyle = gradient;
       ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.restore();
     }
   }
 
-  // 创建粒子
-  for (let i = 0; i < particleCount; i++) {
-    particles.push(new Particle());
-  }
+  // 创建粒子（每个文字点对应一个粒子）
+  const particles = textPoints.map(point => new Particle(point));
 
   let frame = 0;
-  const maxFrames = 150; // 动画总帧数（约2.5秒）
+  const maxFrames = 180;
 
-  // 动画循环
   function animate() {
     frame++;
-
-    // 清空画布
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 更新和绘制粒子
     particles.forEach(p => {
       p.update();
       p.draw();
     });
 
-    // 检查是否所有粒子都到达
-    const allArrived = particles.every(p => {
-      const dx = p.targetX - p.x;
-      const dy = p.targetY - p.y;
-      return Math.sqrt(dx * dx + dy * dy) < 10;
-    });
-
-    // 粒子汇聚后显示文字
-    if (frame > 90) {
-      if (logo) {
-        logo.style.opacity = Math.min((frame - 90) / 30, 1);
-      }
-      if (text) {
-        text.style.opacity = Math.min((frame - 100) / 30, 1);
-      }
-    }
-
-    // 动画结束
-    if (frame >= maxFrames || allArrived && frame > 120) {
-      // 停止动画，触发结束
+    // 检查是否完成
+    if (frame >= maxFrames) {
       setTimeout(() => {
         const introScreen = document.querySelector('[data-intro]');
         if (introScreen) {
@@ -152,16 +148,14 @@ const initLiquidIntro = () => {
           document.body.classList.remove('intro-active');
           setTimeout(() => introScreen.remove(), 1000);
         }
-      }, 300);
+      }, 500);
       return;
     }
 
     requestAnimationFrame(animate);
   }
 
-  // 启动动画
   animate();
 };
 
-// 导出
 window.initLiquidIntro = initLiquidIntro;
