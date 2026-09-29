@@ -13,6 +13,10 @@
   --text-dim: rgba(255, 255, 255, 0.7);
 }
 
+.text-gold {
+  color: var(--gold);
+}
+
 html {
   scroll-behavior: smooth;
 }
