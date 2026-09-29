@@ -1,4 +1,4 @@
-// 金色光束扫描开场动画
+// 优雅的粒子汇聚开场动画
 const initLiquidIntro = () => {
   const canvas = document.getElementById('liquid-canvas');
   const ctx = canvas.getContext('2d');
@@ -10,104 +10,128 @@ const initLiquidIntro = () => {
   const centerY = canvas.height / 2;
 
   let frame = 0;
-  const maxFrames = 150;
+  const maxFrames = 100;
 
   const isMobile = window.innerWidth <= 768;
-  const brandSize = isMobile ? 45 : 85;
-  const modelSize = isMobile ? 90 : 170;
+  const brandSize = isMobile ? 50 : 95;
+  const modelSize = isMobile ? 100 : 190;
+  const spacing = isMobile ? 40 : 70;
+
+  // 创建粒子系统
+  const particles = [];
+  const particleCount = isMobile ? 120 : 200;
+
+  for (let i = 0; i < particleCount; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      targetX: 0,
+      targetY: 0,
+      size: Math.random() * 2 + 1,
+      speed: Math.random() * 0.02 + 0.01,
+      delay: Math.random() * 30
+    });
+  }
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
 
   function animate() {
     frame++;
 
-    // 黑色背景
+    // 深黑背景
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const progress = frame / maxFrames;
 
-    // 阶段1：光束从左到右扫描 (0-40帧)
-    if (frame < 40) {
-      const scanProgress = frame / 40;
-      const scanX = canvas.width * scanProgress;
+    // 阶段1：粒子从随机位置汇聚到中心 (0-50帧)
+    if (frame <= 50) {
+      particles.forEach((p, i) => {
+        if (frame > p.delay) {
+          const localProgress = Math.min((frame - p.delay) / 40, 1);
+          const eased = easeOutCubic(localProgress);
 
-      // 垂直光束
-      const gradient = ctx.createLinearGradient(scanX - 100, 0, scanX + 100, 0);
-      gradient.addColorStop(0, 'rgba(201, 169, 97, 0)');
-      gradient.addColorStop(0.5, 'rgba(255, 223, 143, 0.8)');
-      gradient.addColorStop(1, 'rgba(201, 169, 97, 0)');
+          const currentX = p.x + (centerX - p.x) * eased;
+          const currentY = p.y + (centerY - p.y) * eased;
 
-      ctx.fillStyle = gradient;
-      ctx.fillRect(scanX - 100, 0, 200, canvas.height);
+          const opacity = 0.3 + localProgress * 0.5;
+          const size = p.size * (0.5 + localProgress * 0.5);
 
-      // 光束扫过后留下金色粒子
-      for (let i = 0; i < 20; i++) {
-        const x = scanX + (Math.random() - 0.5) * 200;
-        const y = Math.random() * canvas.height;
-        const size = Math.random() * 3 + 1;
-
-        ctx.fillStyle = `rgba(201, 169, 97, ${Math.random() * 0.6})`;
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fill();
-      }
+          ctx.fillStyle = `rgba(201, 169, 97, ${opacity})`;
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = 'rgba(201, 169, 97, 0.6)';
+          ctx.beginPath();
+          ctx.arc(currentX, currentY, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
     }
 
-    // 阶段2：文字逐渐显现 (40-100帧)
-    if (frame >= 40) {
-      const textProgress = Math.min((frame - 40) / 60, 1);
+    // 阶段2：中心光爆 + 文字淡入 (35-85帧)
+    if (frame >= 35) {
+      const textProgress = Math.min((frame - 35) / 50, 1);
+      const eased = easeOutCubic(textProgress);
 
-      // ALIBARBAR
+      // 中心光晕
+      if (frame < 60) {
+        const glowProgress = (frame - 35) / 25;
+        const glowRadius = glowProgress * 400;
+        const glowGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, glowRadius);
+        glowGradient.addColorStop(0, `rgba(255, 223, 143, ${0.3 * (1 - glowProgress)})`);
+        glowGradient.addColorStop(0.5, `rgba(201, 169, 97, ${0.15 * (1 - glowProgress)})`);
+        glowGradient.addColorStop(1, 'rgba(201, 169, 97, 0)');
+        ctx.fillStyle = glowGradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // ALIBARBAR 文字
       ctx.save();
-      ctx.font = `900 ${brandSize}px Arial`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // 从模糊到清晰
-      ctx.filter = `blur(${(1 - textProgress) * 20}px)`;
-      ctx.globalAlpha = textProgress;
+      // 轻微模糊效果
+      ctx.filter = `blur(${(1 - eased) * 8}px)`;
+      ctx.globalAlpha = eased;
 
-      // 金色渐变
-      const textGradient = ctx.createLinearGradient(
-        centerX - 300, centerY - 50,
-        centerX + 300, centerY + 50
+      // 品牌名 - 细线条
+      ctx.font = `300 ${brandSize}px -apple-system, Arial, sans-serif`;
+      ctx.letterSpacing = isMobile ? '0.3em' : '0.5em';
+
+      const brandGradient = ctx.createLinearGradient(
+        centerX - 300, centerY - spacing,
+        centerX + 300, centerY - spacing
       );
-      textGradient.addColorStop(0, '#c9a961');
-      textGradient.addColorStop(0.5, '#ffd88f');
-      textGradient.addColorStop(1, '#c9a961');
+      brandGradient.addColorStop(0, 'rgba(201, 169, 97, 0.7)');
+      brandGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.95)');
+      brandGradient.addColorStop(1, 'rgba(201, 169, 97, 0.7)');
 
-      ctx.fillStyle = textGradient;
-      ctx.shadowBlur = 40 * textProgress;
-      ctx.shadowColor = 'rgba(201, 169, 97, 1)';
+      ctx.fillStyle = brandGradient;
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = 'rgba(201, 169, 97, 0.4)';
+      ctx.fillText('ALIBARBAR', centerX, centerY - spacing);
 
-      ctx.fillText('ALIBARBAR', centerX, centerY - 30);
+      // 9000 - 粗体
+      ctx.font = `900 ${modelSize}px -apple-system, Arial, sans-serif`;
+      ctx.letterSpacing = isMobile ? '0.1em' : '0.15em';
 
-      // 9000
-      ctx.font = `900 ${modelSize}px Arial`;
-      ctx.fillText('9000', centerX, centerY + 60);
+      const modelGradient = ctx.createLinearGradient(
+        centerX - 400, centerY + spacing,
+        centerX + 400, centerY + spacing
+      );
+      modelGradient.addColorStop(0, '#c9a961');
+      modelGradient.addColorStop(0.3, '#ffd88f');
+      modelGradient.addColorStop(0.5, '#ffffff');
+      modelGradient.addColorStop(0.7, '#ffd88f');
+      modelGradient.addColorStop(1, '#c9a961');
+
+      ctx.fillStyle = modelGradient;
+      ctx.shadowBlur = 30;
+      ctx.shadowColor = 'rgba(201, 169, 97, 0.8)';
+      ctx.fillText('9000', centerX, centerY + spacing);
 
       ctx.restore();
-    }
-
-    // 阶段3：环绕粒子效果 (60帧后)
-    if (frame >= 60) {
-      const particleCount = 30;
-      const radius = 300;
-      const rotation = frame * 0.02;
-
-      for (let i = 0; i < particleCount; i++) {
-        const angle = (i / particleCount) * Math.PI * 2 + rotation;
-        const x = centerX + Math.cos(angle) * radius;
-        const y = centerY + Math.sin(angle) * (radius * 0.5);
-        const size = 2 + Math.sin(frame * 0.1 + i) * 1;
-        const opacity = 0.3 + Math.sin(frame * 0.05 + i) * 0.2;
-
-        ctx.fillStyle = `rgba(201, 169, 97, ${opacity})`;
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = 'rgba(201, 169, 97, 0.8)';
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fill();
-      }
     }
 
     if (frame >= maxFrames) {
@@ -118,7 +142,7 @@ const initLiquidIntro = () => {
           document.body.classList.remove('intro-active');
           setTimeout(() => introScreen.remove(), 1000);
         }
-      }, 300);
+      }, 400);
       return;
     }
 
