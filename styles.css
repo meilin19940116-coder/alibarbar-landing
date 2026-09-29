@@ -356,6 +356,22 @@ body:not(.intro-active) .hero-content {
   margin-top: 2rem;
 }
 
+@media (max-width: 768px) {
+  .design-showcase {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+
+  .design-item:nth-child(1),
+  .design-item:nth-child(2),
+  .design-item:nth-child(3),
+  .design-item:nth-child(4) {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+    margin-top: 0 !important;
+  }
+}
+
 .design-item {
   position: relative;
   padding: 3rem;
