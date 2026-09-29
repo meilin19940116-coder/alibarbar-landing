@@ -66,15 +66,22 @@ a {
   left: 0;
   right: 0;
   z-index: 100;
-  background: rgba(10, 10, 10, 0.9);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(201, 169, 97, 0.1);
-  padding: 1rem 5%;
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom: none;
+  padding: 1.5rem 5%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   opacity: 0;
-  transition: opacity 0.5s ease 0.3s;
+  transition: opacity 0.5s ease 0.3s, background 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+/* 滚动后添加背景 */
+.header.scrolled {
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(201, 169, 97, 0.1);
 }
 
 body:not(.intro-active) .header {
@@ -83,6 +90,7 @@ body:not(.intro-active) .header {
 
 .logo img {
   height: 32px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
 .nav {
@@ -93,8 +101,9 @@ body:not(.intro-active) .header {
 
 .nav a {
   font-size: 0.95rem;
-  color: var(--text-dim);
+  color: rgba(255, 255, 255, 0.9);
   transition: color 0.2s;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .nav a:hover {
@@ -109,11 +118,13 @@ body:not(.intro-active) .header {
   font-size: 0.9rem;
   border-radius: 4px;
   transition: all 0.2s;
+  box-shadow: 0 2px 10px rgba(201, 169, 97, 0.3);
 }
 
 .btn-header:hover {
   background: #d4b76f;
   transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(201, 169, 97, 0.5);
 }
 
 .nav-toggle {
@@ -140,17 +151,15 @@ body:not(.intro-active) .header {
   align-items: center;
   padding: 0 5%;
   overflow: hidden;
+  background-color: #000;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .hero-bg-video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 1;
-  opacity: 0;
-  transition: opacity 0.8s ease;
+  display: none;
+}
 }
 
 .hero-bg-video.loaded {

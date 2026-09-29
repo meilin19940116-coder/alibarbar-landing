@@ -15,22 +15,46 @@ const initIntro = () => {
   source.src = isMobile ? './assets/alibarbar手机.mp4' : './assets/alibarbar电脑.mp4';
   video.load();
 
+  let videoStarted = false;
+
   // 视频就绪后播放
   video.addEventListener('canplay', () => {
-    video.play().catch(() => endIntro());
+    if (!videoStarted) {
+      videoStarted = true;
+      const playPromise = video.play();
+
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // 自动播放失败，直接结束开场
+          console.log('Autoplay blocked, skipping intro');
+          endIntro();
+        });
+      }
+    }
   }, { once: true });
 
   // 视频结束
   video.addEventListener('ended', endIntro, { once: true });
 
-  // 8秒超时
-  setTimeout(endIntro, 8000);
+  // 加载失败或超时处理
+  video.addEventListener('error', () => {
+    console.log('Video load error, skipping intro');
+    endIntro();
+  }, { once: true });
+
+  // 6秒超时保护（缩短超时时间）
+  setTimeout(() => {
+    if (document.body.classList.contains('intro-active')) {
+      console.log('Intro timeout, skipping');
+      endIntro();
+    }
+  }, 6000);
 
   function endIntro() {
     screen.classList.add('ended');
     document.body.classList.remove('intro-active');
 
-    // 启动首屏背景视频
+    // 启动首屏背景
     startHeroVideo();
 
     // 1秒后移除开场遮罩
@@ -45,17 +69,18 @@ const startHeroVideo = () => {
 
   if (!video || !source) return;
 
-  // 使用与开场相同的视频作为背景
-  const isMobile = window.innerWidth <= 768;
-  source.src = isMobile ? './assets/alibarbar手机.mp4' : './assets/alibarbar电脑.mp4';
-  video.load();
+  // 使用静态背景图片替代视频尾帧
+  const hero = document.querySelector('.hero');
+  if (hero) {
+    const isMobile = window.innerWidth <= 768;
+    const bgImage = isMobile ? './assets/背景图手机端.png' : './assets/背景图电脑.png';
 
-  video.addEventListener('canplay', () => {
-    // 跳到视频最后一帧并暂停（定格效果）
-    video.currentTime = video.duration - 0.1;
-    video.pause();
-    video.classList.add('loaded');
-  }, { once: true });
+    // 直接设置背景图
+    hero.style.backgroundImage = `url('${bgImage}')`;
+    hero.style.backgroundSize = 'cover';
+    hero.style.backgroundPosition = 'center';
+    hero.classList.add('hero-loaded');
+  }
 };
 
 // 轮播图控制 - 3D卡片效果
@@ -217,6 +242,20 @@ const setYear = () => {
   });
 };
 
+// 导航栏滚动效果
+const setupHeaderScroll = () => {
+  const header = document.querySelector('[data-header]');
+  if (!header) return;
+
+  window.addEventListener('scroll', () => {
+    if (window.pageYOffset > 50) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+};
+
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
   initIntro();
@@ -225,6 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupScroll();
   setupTracking();
   setYear();
+  setupHeaderScroll();
   track('page_load');
 
   // 启动产品特效
