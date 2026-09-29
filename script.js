@@ -1,6 +1,6 @@
 // ALIBARBAR 9000 - 简洁高转化脚本
 
-// 纯CSS开场动画控制
+// 液体粒子开场动画
 const initIntro = () => {
   const screen = document.querySelector('[data-intro]');
 
@@ -17,19 +17,17 @@ const initIntro = () => {
   const bgPreload = new Image();
   bgPreload.src = bgImage;
 
-  // 2.5秒后结束开场动画
-  setTimeout(() => {
-    screen.classList.add('ended');
-    document.body.classList.remove('intro-active');
+  // 启动液体粒子动画
+  if (typeof window.initLiquidIntro === 'function') {
+    window.initLiquidIntro();
+  }
 
-    // 确保背景图显示
+  // 确保背景图显示
+  setTimeout(() => {
     const hero = document.querySelector('.hero');
     if (hero) {
       hero.style.backgroundImage = `url('${bgImage}')`;
     }
-
-    // 1秒后移除开场元素
-    setTimeout(() => screen.remove(), 1000);
   }, 2500);
 };
 

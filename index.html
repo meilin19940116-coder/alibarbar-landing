@@ -8,27 +8,21 @@
     <title>ALIBARBAR 9000</title>
     <link rel="icon" href="./assets/alibarbar-logo.svg" type="image/svg+xml">
     <link rel="stylesheet" href="./styles.css">
+    <script src="./liquid-intro.js"></script>
     <script src="./effects.js"></script>
     <script src="./script.js" defer></script>
   </head>
   <body>
-    <!-- 开场动画 -->
+    <!-- 开场动画 - 液体粒子汇聚 -->
     <div class="intro-screen" data-intro>
+      <canvas id="liquid-canvas"></canvas>
       <div class="intro-content">
-        <div class="intro-logo">
+        <div class="intro-logo" data-intro-logo>
           <img src="./assets/alibarbar-logo.svg" alt="ALIBARBAR">
         </div>
-        <div class="intro-text">
+        <div class="intro-text" data-intro-text>
           <span class="intro-brand">ALIBARBAR</span>
           <span class="intro-model">9000</span>
-        </div>
-        <div class="intro-particles">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
         </div>
       </div>
     </div>
