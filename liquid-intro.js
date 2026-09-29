@@ -1,145 +1,138 @@
-// 液体流动汇聚成文字动画
+// 金色液体流动汇聚成文字动画
 const initLiquidIntro = () => {
   const canvas = document.getElementById('liquid-canvas');
   const ctx = canvas.getContext('2d');
 
-  // 设置canvas尺寸
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
 
-  // 创建文字轮廓点
-  function getTextPoints(text, fontSize, x, y) {
-    ctx.font = `900 ${fontSize}px Arial`;
-    ctx.fillStyle = '#fff';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text, x, y);
+  // 液体流类 - 像水流一样
+  class LiquidStream {
+    constructor(targetText, fontSize, targetX, targetY, delay) {
+      this.targetText = targetText;
+      this.fontSize = fontSize;
+      this.targetX = targetX;
+      this.targetY = targetY;
+      this.delay = delay;
 
-    // 获取文字像素数据
-    const textWidth = ctx.measureText(text).width;
-    const imageData = ctx.getImageData(x - textWidth / 2 - 20, y - fontSize / 2 - 20, textWidth + 40, fontSize + 40);
-    const pixels = imageData.data;
-    const points = [];
+      // 从左边屏幕外开始
+      this.x = -300;
+      this.y = targetY + (Math.random() - 0.5) * 100;
 
-    // 采样文字边缘点
-    for (let py = 0; py < imageData.height; py += 3) {
-      for (let px = 0; px < imageData.width; px += 3) {
-        const i = (py * imageData.width + px) * 4;
-        if (pixels[i + 3] > 128) { // alpha > 128
-          points.push({
-            x: x - textWidth / 2 - 20 + px,
-            y: y - fontSize / 2 - 20 + py
-          });
-        }
-      }
-    }
-
-    return points;
-  }
-
-  // 清空画布，准备获取文字轮廓
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // 获取"ALIBARBAR 9000"的轮廓点
-  const isMobile = window.innerWidth <= 768;
-  const brandSize = isMobile ? 40 : 80;
-  const modelSize = isMobile ? 80 : 160;
-  const gap = isMobile ? 60 : 100;
-
-  const brandPoints = getTextPoints('ALIBARBAR', brandSize, centerX - gap, centerY);
-  const modelPoints = getTextPoints('9000', modelSize, centerX + gap * 1.5, centerY);
-  const textPoints = [...brandPoints, ...modelPoints];
-
-  // 清空画布
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // 粒子类
-  class Particle {
-    constructor(targetPoint) {
-      // 从屏幕边缘随机位置开始
-      const edge = Math.floor(Math.random() * 4);
-      if (edge === 0) { // 上
-        this.x = Math.random() * canvas.width;
-        this.y = -50;
-      } else if (edge === 1) { // 右
-        this.x = canvas.width + 50;
-        this.y = Math.random() * canvas.height;
-      } else if (edge === 2) { // 下
-        this.x = Math.random() * canvas.width;
-        this.y = canvas.height + 50;
-      } else { // 左
-        this.x = -50;
-        this.y = Math.random() * canvas.height;
-      }
-
-      this.targetX = targetPoint.x;
-      this.targetY = targetPoint.y;
-      this.size = Math.random() * 3 + 2;
+      this.progress = 0;
       this.opacity = 0;
-      this.delay = Math.random() * 40;
-      this.age = 0;
+      this.width = 0;
+      this.started = false;
     }
 
-    update() {
-      this.age++;
-      if (this.age < this.delay) return;
+    update(frame) {
+      if (frame < this.delay) return;
 
-      const dx = this.targetX - this.x;
-      const dy = this.targetY - this.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (!this.started) {
+        this.started = true;
+      }
 
-      if (distance > 2) {
-        const speed = Math.min(distance * 0.05, 10);
-        this.x += (dx / distance) * speed + (Math.random() - 0.5) * 0.8;
-        this.y += (dy / distance) * speed + (Math.random() - 0.5) * 0.8;
-
-        if (this.opacity < 1) this.opacity += 0.03;
+      // 液体流动进度
+      if (this.progress < 1) {
+        this.progress += 0.015;
+        this.x = -300 + (this.targetX + 300) * this.easeOut(this.progress);
+        this.opacity = Math.min(this.progress * 2, 1);
+        this.width = Math.min(this.progress * 300, 200);
       } else {
-        this.x = this.targetX + (Math.random() - 0.5) * 0.5;
-        this.y = this.targetY + (Math.random() - 0.5) * 0.5;
+        // 到达目标，开始凝固成文字
         this.opacity = 1;
       }
     }
 
+    easeOut(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
     draw() {
-      if (this.age < this.delay) return;
+      if (!this.started) return;
 
       ctx.save();
       ctx.globalAlpha = this.opacity;
 
-      const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 2);
-      gradient.addColorStop(0, 'rgba(255, 223, 143, 1)');
-      gradient.addColorStop(0.4, 'rgba(201, 169, 97, 1)');
-      gradient.addColorStop(1, 'rgba(201, 169, 97, 0)');
+      if (this.progress < 1) {
+        // 绘制流动的液体
+        const gradient = ctx.createLinearGradient(this.x - this.width, this.y, this.x, this.y);
+        gradient.addColorStop(0, 'rgba(201, 169, 97, 0)');
+        gradient.addColorStop(0.3, 'rgba(201, 169, 97, 0.6)');
+        gradient.addColorStop(0.7, 'rgba(255, 223, 143, 1)');
+        gradient.addColorStop(1, 'rgba(201, 169, 97, 1)');
 
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
-      ctx.fill();
+        ctx.fillStyle = gradient;
+
+        // 波浪形状
+        ctx.beginPath();
+        ctx.moveTo(this.x - this.width, this.y - 30);
+
+        for (let i = 0; i <= this.width; i += 10) {
+          const waveY = this.y + Math.sin((i + Date.now() * 0.01) * 0.1) * 8;
+          ctx.lineTo(this.x - this.width + i, waveY);
+        }
+
+        for (let i = this.width; i >= 0; i -= 10) {
+          const waveY = this.y + 30 + Math.sin((i + Date.now() * 0.01 + Math.PI) * 0.1) * 8;
+          ctx.lineTo(this.x - this.width + i, waveY);
+        }
+
+        ctx.closePath();
+        ctx.fill();
+
+        // 发光效果
+        ctx.shadowBlur = 30;
+        ctx.shadowColor = 'rgba(201, 169, 97, 0.8)';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+      } else {
+        // 凝固成文字
+        ctx.font = `900 ${this.fontSize}px Arial`;
+        ctx.fillStyle = '#c9a961';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // 发光效果
+        ctx.shadowBlur = 40;
+        ctx.shadowColor = 'rgba(201, 169, 97, 1)';
+        ctx.fillText(this.targetText, this.targetX, this.targetY);
+        ctx.shadowBlur = 0;
+      }
 
       ctx.restore();
     }
   }
 
-  // 创建粒子（每个文字点对应一个粒子）
-  const particles = textPoints.map(point => new Particle(point));
+  // 创建液体流
+  const isMobile = window.innerWidth <= 768;
+  const brandSize = isMobile ? 50 : 90;
+  const modelSize = isMobile ? 90 : 170;
+
+  const streams = [
+    new LiquidStream('ALIBARBAR', brandSize, centerX - 100, centerY - 20, 0),
+    new LiquidStream('9000', modelSize, centerX + 150, centerY + 20, 30)
+  ];
 
   let frame = 0;
-  const maxFrames = 180;
+  const maxFrames = 200;
 
   function animate() {
     frame++;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    particles.forEach(p => {
-      p.update();
-      p.draw();
+    // 半透明清除，产生拖尾效果
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    streams.forEach(stream => {
+      stream.update(frame);
+      stream.draw();
     });
 
-    // 检查是否完成
     if (frame >= maxFrames) {
       setTimeout(() => {
         const introScreen = document.querySelector('[data-intro]');
@@ -154,6 +147,10 @@ const initLiquidIntro = () => {
 
     requestAnimationFrame(animate);
   }
+
+  // 黑色背景
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   animate();
 };
