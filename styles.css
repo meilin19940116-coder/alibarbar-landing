@@ -1126,6 +1126,45 @@ body:not(.intro-active) .hero-content {
     font-size: 1.5rem;
   }
 
+  /* 订购区响应式 */
+  .order-split {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .order-left,
+  .order-right {
+    padding: 0;
+  }
+
+  .order-left h2 {
+    font-size: 2rem;
+  }
+
+  .order-features {
+    gap: 1rem;
+  }
+
+  .order-features li {
+    font-size: 0.95rem;
+  }
+
+  .order-cta-box {
+    padding: 2.5rem 2rem;
+  }
+
+  .btn-whatsapp {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .order-trust-badges {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
   .order-box {
     padding: 3rem 2rem;
   }
