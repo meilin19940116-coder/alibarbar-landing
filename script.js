@@ -1,224 +1,235 @@
-/* Update this URL when the final Shopyy product or collection page is ready. */
-const SHOP_URL = 'https://ausvape-b.shopyys.net/collections/all';
+// ALIBARBAR 9000 - 简洁高转化脚本
 
-// Lottie 烟雾动画
-const setupLottieSmoke = () => {
-  if (typeof lottie === 'undefined') {
-    console.warn('Lottie library not loaded');
-    return;
+// 开场视频控制
+const initIntro = () => {
+  const screen = document.querySelector('[data-intro]');
+  const video = document.querySelector('[data-intro-video]');
+  const source = video?.querySelector('[data-video-src]');
+
+  if (!screen || !video || !source) return;
+
+  document.body.classList.add('intro-active');
+
+  // 根据视口选择视频
+  const isMobile = window.innerWidth <= 768;
+  source.src = isMobile ? './assets/alibarbar手机.mp4' : './assets/alibarbar电脑.mp4';
+  video.load();
+
+  // 视频就绪后播放
+  video.addEventListener('canplay', () => {
+    video.play().catch(() => endIntro());
+  }, { once: true });
+
+  // 视频结束
+  video.addEventListener('ended', endIntro, { once: true });
+
+  // 8秒超时
+  setTimeout(endIntro, 8000);
+
+  function endIntro() {
+    screen.classList.add('ended');
+    document.body.classList.remove('intro-active');
+
+    // 启动首屏背景视频
+    startHeroVideo();
+
+    // 1秒后移除开场遮罩
+    setTimeout(() => screen.remove(), 1000);
   }
+};
 
-  // 使用免费的烟雾动画 JSON（LottieFiles 的公开资源）
-  const smokeAnimationURL = 'https://lottie.host/d4156a0f-39a5-4be1-8b97-a3d9fa3f2c75/BnW2Kzg3bK.json';
+// 首屏背景视频（定格循环）
+const startHeroVideo = () => {
+  const video = document.querySelector('[data-hero-video]');
+  const source = video?.querySelector('[data-hero-src]');
 
-  const containers = ['smoke-lottie-1', 'smoke-lottie-2', 'smoke-lottie-3'];
+  if (!video || !source) return;
 
-  containers.forEach((id, index) => {
-    const container = document.getElementById(id);
-    if (!container) return;
+  // 使用与开场相同的视频作为背景
+  const isMobile = window.innerWidth <= 768;
+  source.src = isMobile ? './assets/alibarbar手机.mp4' : './assets/alibarbar电脑.mp4';
+  video.load();
 
-    setTimeout(() => {
-      lottie.loadAnimation({
-        container: container,
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        path: smokeAnimationURL
-      });
-      console.log('Lottie smoke loaded:', id);
-    }, index * 500); // 错开加载时间
+  video.addEventListener('canplay', () => {
+    // 跳到视频最后一帧并暂停（定格效果）
+    video.currentTime = video.duration - 0.1;
+    video.pause();
+    video.classList.add('loaded');
+  }, { once: true });
+};
+
+// 轮播图控制 - 3D卡片效果
+const initCarousel = () => {
+  const carousel = document.querySelector('[data-carousel]');
+  const track = document.querySelector('[data-carousel-track]');
+  const slides = Array.from(track?.querySelectorAll('.carousel-slide') || []);
+  const prevBtn = document.querySelector('[data-carousel-prev]');
+  const nextBtn = document.querySelector('[data-carousel-next]');
+  const currentEl = document.querySelector('[data-current]');
+  const totalEl = document.querySelector('[data-total]');
+
+  if (!carousel || !track || slides.length === 0) return;
+
+  let currentIndex = 0;
+  const totalSlides = slides.length;
+
+  // 更新总数
+  if (totalEl) totalEl.textContent = totalSlides;
+
+  // 更新slide状态 - 只显示中间、左边、右边三张
+  const updateSlides = () => {
+    slides.forEach((slide, index) => {
+      slide.classList.remove('active', 'prev', 'next');
+
+      // 中间当前图
+      if (index === currentIndex) {
+        slide.classList.add('active');
+      }
+      // 左边图
+      else if (index === currentIndex - 1 || (currentIndex === 0 && index === totalSlides - 1)) {
+        slide.classList.add('prev');
+      }
+      // 右边图
+      else if (index === currentIndex + 1 || (currentIndex === totalSlides - 1 && index === 0)) {
+        slide.classList.add('next');
+      }
+    });
+
+    // 更新计数器
+    if (currentEl) currentEl.textContent = currentIndex + 1;
+  };
+
+  // 上一张
+  const goPrev = () => {
+    currentIndex = currentIndex > 0 ? currentIndex - 1 : totalSlides - 1;
+    updateSlides();
+    track('carousel_prev', { index: currentIndex });
+  };
+
+  // 下一张
+  const goNext = () => {
+    currentIndex = currentIndex < totalSlides - 1 ? currentIndex + 1 : 0;
+    updateSlides();
+    track('carousel_next', { index: currentIndex });
+  };
+
+  // 绑定按钮
+  prevBtn?.addEventListener('click', goPrev);
+  nextBtn?.addEventListener('click', goNext);
+
+  // 键盘控制
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') goPrev();
+    if (e.key === 'ArrowRight') goNext();
   });
-};
 
-const track = (eventName, detail = {}) => {
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({ event: eventName, ...detail });
-  window.dispatchEvent(new CustomEvent(eventName, { detail }));
-};
+  // 触摸滑动支持
+  let touchStartX = 0;
+  let touchEndX = 0;
 
-const setShopLinks = () => {
-  document.querySelectorAll('[data-shop-link]').forEach((link) => {
-    link.href = SHOP_URL;
-    link.target = '_blank';
-    link.rel = 'noopener';
+  track.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
   });
+
+  track.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+  });
+
+  const handleSwipe = () => {
+    if (touchStartX - touchEndX > 50) goNext();
+    if (touchEndX - touchStartX > 50) goPrev();
+  };
+
+  // 初始化
+  updateSlides();
 };
 
-const setupNavigation = () => {
+// 导航菜单
+const setupNav = () => {
   const header = document.querySelector('[data-header]');
-  const toggle = document.querySelector('[data-menu-toggle]');
+  const toggle = document.querySelector('[data-nav-toggle]');
   const nav = document.querySelector('[data-nav]');
-  if (!header || !toggle || !nav) return;
+
+  if (!toggle) return;
 
   toggle.addEventListener('click', () => {
-    const isOpen = header.classList.toggle('nav-open');
-    toggle.setAttribute('aria-expanded', String(isOpen));
+    header.classList.toggle('open');
   });
 
-  nav.addEventListener('click', (event) => {
-    if (event.target.closest('a')) {
-      header.classList.remove('nav-open');
-      toggle.setAttribute('aria-expanded', 'false');
+  // 点击链接关闭菜单
+  nav?.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      header.classList.remove('open');
+    });
+  });
+
+  // 点击外部关闭
+  document.addEventListener('click', (e) => {
+    if (!header.contains(e.target) && header.classList.contains('open')) {
+      header.classList.remove('open');
     }
   });
 };
 
-const setupReveal = () => {
-  const items = document.querySelectorAll('.reveal');
-  document.body.classList.add('reveal-enabled');
-  if (!('IntersectionObserver' in window)) {
-    items.forEach((item) => item.classList.add('is-visible'));
-    return;
-  }
+// 平滑滚动
+const setupScroll = () => {
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      const href = this.getAttribute('href');
+      if (href === '#' || href === '#top') {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
 
-  const observer = new IntersectionObserver((entries, currentObserver) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('is-visible');
-        currentObserver.unobserve(entry.target);
+      const target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        const offset = 80;
+        const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
       }
     });
-  }, { threshold: .14 });
-
-  items.forEach((item) => observer.observe(item));
+  });
 };
 
-const setupHeroMotion = () => {
-  const visual = document.querySelector('[data-hero-visual]');
-  if (!visual || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  visual.addEventListener('pointermove', (event) => {
-    const bounds = visual.getBoundingClientRect();
-    const x = (event.clientX - bounds.left) / bounds.width - .5;
-    const y = (event.clientY - bounds.top) / bounds.height - .5;
-    visual.style.setProperty('--pointer-x', `${x * 10}px`);
-    visual.style.setProperty('--pointer-y', `${y * 10}px`);
-    visual.querySelector('.device').style.translate = `${x * 10}px ${y * 8}px`;
-  });
-
-  visual.addEventListener('pointerleave', () => {
-    visual.querySelector('.device').style.translate = '0 0';
-  });
+// 追踪
+const track = (name, data = {}) => {
+  if (window.dataLayer) {
+    window.dataLayer.push({ event: name, ...data });
+  }
+  console.log('Track:', name, data);
 };
 
 const setupTracking = () => {
-  document.querySelectorAll('[data-track]').forEach((element) => {
-    element.addEventListener('click', () => track('landing_click', { target: element.dataset.track }));
+  document.querySelectorAll('[data-track]').forEach(el => {
+    el.addEventListener('click', () => {
+      track('cta_click', { source: el.dataset.track });
+    });
   });
 };
 
-const setupHeroVideo = () => {
-  const overlayVideo = document.querySelector('[data-intro-video]');
-  const overlay = document.querySelector('[data-intro-overlay]');
-
-  if (!overlayVideo || !overlay) return;
-
-  // 与 CSS 的 768px 断点保持一致；进站时只请求一份视频，旋转屏幕不重播。
-  const mediaVariant = window.matchMedia('(max-width: 768px)').matches ? 'mobile' : 'desktop';
-  overlayVideo.poster = overlayVideo.dataset[`${mediaVariant}Poster`];
-
-  // Only show the full-screen layer after this initializer is ready. If the
-  // script is blocked, the static page remains usable instead of staying black.
-  document.documentElement.classList.add('js-ready');
-
-  // 标记视频正在播放；视频结束后只保留英雄区的静态尾帧图。
-  document.body.classList.add('intro-playing');
-
-  let introEnding = false;
-  const endIntro = () => {
-    if (introEnding) return;
-    introEnding = true;
-    overlayVideo.pause();
-    // 先释放滚动和页面交互，再让遮罩继续淡出；不要让视觉转场阻塞页面。
-    document.body.classList.remove('intro-playing');
-    document.body.classList.add('intro-ended');
-
-    if (!document.body.classList.contains('intro-transitioning')) {
-      document.body.classList.add('intro-transitioning');
-    }
-    overlay.classList.add('is-fading');
-
-    // 遮罩动画不再占用点击和滚动；动画结束后从文档层移除。
-    setTimeout(() => {
-      overlay.classList.add('is-ended');
-      document.body.classList.remove('intro-transitioning');
-    }, 2000);
-
-    // 烟雾初始化放到浏览器空闲时，避免和结束事件争抢主线程。
-    const initSmoke = () => {
-      // 初始化烟雾效果
-      try {
-        if (typeof window.initSmokeBackground === 'function') {
-          console.log('Initializing WebGL smoke...');
-          window.initSmokeBackground('webgl-smoke', '#d8a84e');
-        } else {
-          console.warn('initSmokeBackground function not found');
-        }
-      } catch (error) {
-        console.warn('WebGL smoke is unavailable; continuing with CSS effects.', error);
-      }
-    };
-    if (typeof window.requestIdleCallback === 'function') {
-      window.requestIdleCallback(initSmoke, { timeout: 1500 });
-    } else {
-      setTimeout(initSmoke, 350);
-    }
-
-    track('intro_video_ended');
-  };
-
-  // 监听视频播放进度，在快结束时触发转场
-  overlayVideo.addEventListener('timeupdate', () => {
-    const timeRemaining = overlayVideo.duration - overlayVideo.currentTime;
-
-    // 当剩余2秒时开始转场动画
-    if (timeRemaining <= 2 && timeRemaining > 0 && !document.body.classList.contains('intro-transitioning')) {
-      document.body.classList.add('intro-transitioning');
-      overlay.classList.add('is-fading');
-    }
+// 年份
+const setYear = () => {
+  document.querySelectorAll('[data-year]').forEach(el => {
+    el.textContent = new Date().getFullYear();
   });
-
-  overlayVideo.addEventListener('ended', endIntro);
-
-  overlayVideo.addEventListener('error', () => {
-    console.warn('Intro video failed to load');
-    endIntro();
-  });
-
-  // 如果视频加载失败或无法播放
-  overlayVideo.addEventListener('loadedmetadata', () => {
-    if (overlayVideo.duration === 0 || isNaN(overlayVideo.duration)) {
-      endIntro();
-    }
-  });
-
-  // 脚本准备好后启动开场视频；拒绝自动播放时立即降级到尾帧图。
-  try {
-    overlayVideo.src = overlayVideo.dataset[`${mediaVariant}Src`];
-    overlayVideo.muted = true;
-    const playAttempt = overlayVideo.play();
-    if (playAttempt && typeof playAttempt.catch === 'function') {
-      playAttempt.catch(() => endIntro());
-    }
-  } catch (error) {
-    endIntro();
-  }
-
-  // 最终超时保护 - 8秒
-  setTimeout(() => {
-    if (!document.body.classList.contains('intro-ended')) {
-      console.warn('Intro video timeout');
-      endIntro();
-    }
-  }, 8000);
 };
 
+// 初始化
 document.addEventListener('DOMContentLoaded', () => {
-  setShopLinks();
-  setupNavigation();
-  setupHeroVideo();
-  setupReveal();
-  setupHeroMotion();
+  initIntro();
+  initCarousel();
+  setupNav();
+  setupScroll();
   setupTracking();
-  document.querySelectorAll('[data-year]').forEach((node) => { node.textContent = new Date().getFullYear(); });
+  setYear();
+  track('page_load');
+
+  // 启动产品特效
+  if (window.initProductEffects) {
+    window.initProductEffects();
+  }
 });
+
