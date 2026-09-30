@@ -1,0 +1,358 @@
+# WhatsApp 号码轮询系统 - 使用说明
+
+## 📱 功能说明
+
+每次用户访问页面时，系统会**随机选择一个 WhatsApp 号码**，将所有 WhatsApp 按钮指向该号码。这样可以：
+
+✅ 分散流量到多个客服号码
+✅ 避免单个号码被封
+✅ 提高转化效率
+✅ 方便管理多个客服
+
+---
+
+## 🔧 如何添加/修改号码
+
+### 步骤 1：打开配置文件
+
+文件路径：`whatsapp-rotation.js`
+
+### 步骤 2：找到号码池配置（第 9-31 行）
+
+```javascript
+const WHATSAPP_NUMBERS = [
+  {
+    number: '61412345678',  // 澳洲号码格式：61 + 手机号
+    name: 'Customer Service 1',
+    active: true
+  },
+  {
+    number: '61412345679',
+    name: 'Customer Service 2',
+    active: true
+  },
+  // ... 更多号码
+];
+```
+
+### 步骤 3：修改号码
+
+**澳洲号码格式：**
+- 国际区号：`61`
+- 手机号：去掉开头的 `0`
+- 例如：`0412 345 678` → `61412345678`
+
+**示例：**
+
+```javascript
+const WHATSAPP_NUMBERS = [
+  {
+    number: '61412345678',      // 改成你的真实号码
+    name: 'Customer Service 1', // 可选：给号码起个名字
+    active: true                // true = 启用, false = 停用
+  },
+  {
+    number: '61423456789',      // 第二个号码
+    name: 'Customer Service 2',
+    active: true
+  },
+  {
+    number: '61434567890',      // 第三个号码
+    name: 'Customer Service 3',
+    active: true
+  }
+];
+```
+
+---
+
+## ➕ 添加新号码
+
+复制一个号码块，修改内容：
+
+```javascript
+const WHATSAPP_NUMBERS = [
+  // 现有号码...
+
+  // 添加新号码（复制这段）
+  {
+    number: '61445678901',          // 新号码
+    name: 'Customer Service 6',     // 新名字
+    active: true                    // 启用
+  }
+];
+```
+
+**注意：**
+- 最后一个号码后面**不要**加逗号 `,`
+- 其他号码后面**要**加逗号 `,`
+
+---
+
+## 🚫 临时停用某个号码
+
+不需要删除，只需要设置 `active: false`：
+
+```javascript
+{
+  number: '61412345678',
+  name: 'Customer Service 1',
+  active: false  // 改成 false 就停用了
+}
+```
+
+停用后，系统会自动跳过这个号码。
+
+---
+
+## 🧪 测试号码轮询
+
+### 方法 1：浏览器测试
+
+1. 打开网站：`https://synchro-match.com?debug=alibar2024`
+2. 按 `F12` 打开开发者工具
+3. 点击 **Console（控制台）**
+4. 刷新页面
+5. 查看输出：
+   ```
+   找到 4 个 WhatsApp 按钮
+   WhatsApp 号码轮询: Customer Service 3 (61434567890)
+   WhatsApp 按钮 1 已更新: https://wa.me/61434567890?text=...
+   ```
+
+### 方法 2：手动测试
+
+1. 打开网站（黑页）
+2. 点击任意 WhatsApp 按钮
+3. 查看跳转的号码是否正确
+4. 刷新页面，再次点击
+5. 应该会随机跳转到不同号码
+
+### 方法 3：命令行测试（开发者工具）
+
+在浏览器控制台输入：
+
+```javascript
+// 查看当前选中的号码
+getRandomWhatsAppNumber()
+
+// 生成 WhatsApp 链接
+generateWhatsAppLink()
+
+// 重新初始化按钮
+initWhatsAppButtons()
+```
+
+---
+
+## 📊 如何查看号码分配统计
+
+**简单方法：** 在浏览器控制台查看
+
+1. 打开开发者工具（F12）
+2. 点击 Console
+3. 多次刷新页面
+4. 观察每次选中的号码
+
+**理想情况：** 5 个号码，每个号码被选中的概率约为 20%
+
+---
+
+## 🔄 部署更新
+
+修改号码后，需要推送到 GitHub：
+
+```bash
+cd /Users/apple/Desktop/alibarbar落地页
+
+# 查看更改
+git status
+
+# 添加文件
+git add whatsapp-rotation.js
+
+# 提交
+git commit -m "update: change WhatsApp numbers"
+
+# 推送
+git push origin master
+```
+
+等待 30 秒，Vercel 自动部署完成。
+
+---
+
+## ⚠️ 常见问题
+
+### Q1：为什么点击后没有跳转到 WhatsApp？
+
+**原因：** 号码格式错误
+
+**解决：**
+1. 检查号码格式：`61` + 手机号（去掉开头的 0）
+2. 例如：`0412 345 678` 应该写成 `61412345678`
+3. 不要加空格、横杠等特殊字符
+
+---
+
+### Q2：如何确认号码是否正确？
+
+**测试方法：**
+
+在浏览器直接访问：
+```
+https://wa.me/61412345678
+```
+
+如果能打开 WhatsApp 对话，说明号码格式正确。
+
+---
+
+### Q3：所有按钮都指向同一个号码？
+
+**正常！** 这是设计如此。
+
+- 每次**页面加载**时，随机选择一个号码
+- 同一次访问中，所有按钮指向**同一个号码**
+- 用户**刷新页面**后，可能会分配到不同号码
+
+---
+
+### Q4：如何增加某个号码的权重？
+
+**方法：** 在号码池中重复添加该号码
+
+```javascript
+const WHATSAPP_NUMBERS = [
+  {
+    number: '61412345678',  // 号码 1
+    name: 'Primary Service',
+    active: true
+  },
+  {
+    number: '61412345678',  // 号码 1（重复）
+    name: 'Primary Service 2',
+    active: true
+  },
+  {
+    number: '61423456789',  // 号码 2
+    name: 'Secondary Service',
+    active: true
+  }
+];
+```
+
+这样号码 1 被选中的概率是 66%，号码 2 是 33%。
+
+---
+
+### Q5：如何临时禁用轮询，只用一个号码？
+
+**方法 1：** 停用其他号码
+
+```javascript
+const WHATSAPP_NUMBERS = [
+  {
+    number: '61412345678',
+    name: 'Main Service',
+    active: true      // 只有这个启用
+  },
+  {
+    number: '61423456789',
+    name: 'Backup',
+    active: false     // 其他都停用
+  },
+  {
+    number: '61434567890',
+    name: 'Backup 2',
+    active: false
+  }
+];
+```
+
+**方法 2：** 删除号码池，直接在 HTML 中写死号码
+
+（不推荐，失去了轮询的灵活性）
+
+---
+
+## 📝 号码管理建议
+
+### 建议 1：准备 5-10 个号码
+
+- 5 个号码：每个号码承担 20% 流量
+- 10 个号码：每个号码承担 10% 流量
+
+### 建议 2：给号码分组
+
+```javascript
+const WHATSAPP_NUMBERS = [
+  // A 组：主力号码（白天使用）
+  { number: '61412345678', name: 'Day Service 1', active: true },
+  { number: '61423456789', name: 'Day Service 2', active: true },
+
+  // B 组：备用号码（晚上使用）
+  { number: '61434567890', name: 'Night Service 1', active: false },
+  { number: '61445678901', name: 'Night Service 2', active: false }
+];
+```
+
+白天用 A 组，晚上切换到 B 组（改 `active` 状态）。
+
+### 建议 3：监控每个号码的转化率
+
+- 定期查看各号码的咨询量
+- 停用转化率低的号码
+- 增加转化率高的号码权重
+
+---
+
+## 🎯 快速上手流程
+
+1. ✅ 准备 5 个澳洲 WhatsApp 号码
+2. ✅ 打开 `whatsapp-rotation.js`
+3. ✅ 修改 `WHATSAPP_NUMBERS` 数组
+4. ✅ 保存文件
+5. ✅ 推送到 GitHub
+6. ✅ 等待部署（30 秒）
+7. ✅ 测试验证
+
+---
+
+## 📞 示例配置（复制使用）
+
+```javascript
+const WHATSAPP_NUMBERS = [
+  {
+    number: '61412345678',
+    name: 'Sydney Team 1',
+    active: true
+  },
+  {
+    number: '61423456789',
+    name: 'Sydney Team 2',
+    active: true
+  },
+  {
+    number: '61434567890',
+    name: 'Melbourne Team',
+    active: true
+  },
+  {
+    number: '61445678901',
+    name: 'Brisbane Team',
+    active: true
+  },
+  {
+    number: '61456789012',
+    name: 'Perth Team',
+    active: true
+  }
+];
+```
+
+---
+
+**最后更新：** 2024-09-30
+**文件位置：** `whatsapp-rotation.js`
+**需要帮助？** 查看浏览器控制台的日志输出
