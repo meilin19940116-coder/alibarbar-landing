@@ -1,24 +1,16 @@
-// Cinematic Brand Intro. The page stays visible and scrollable independently.
+// Cinematic Brand Intro. Embedded by scripts/build-intro.cjs before the homepage markup.
 (() => {
   'use strict';
 
   const template = document.querySelector('[data-brand-intro-template]');
   if (!template || template.dataset.enabled === 'false') return;
 
-  // The optional stylesheet is preloaded without blocking the page's first paint.
-  // If it arrives late, skip this intro instead of hiding an already visible homepage.
-  const stylesheet = document.querySelector('[data-brand-intro-styles]');
-  if (!stylesheet || !stylesheet.sheet) return;
-  stylesheet.media = 'all';
-
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const paintEntries = window.performance && typeof performance.getEntriesByType === 'function'
-    ? performance.getEntriesByType('paint') : [];
 
-  // Never cover content already shown, a restored scroll position or a deep link.
+  // The component arrives with HTML; ordinary network timing must not disable it.
+  // Continue respecting explicit accessibility preferences and navigation context.
   if (motion.matches || document.hidden || window.scrollY > 0 || window.location.hash ||
-      document.readyState === 'complete' ||
-      paintEntries.some(entry => entry.name === 'first-contentful-paint')) return;
+      document.readyState === 'complete') return;
 
   const intro = template.content.firstElementChild.cloneNode(true);
   const interactionEvents = ['pointerdown', 'touchstart', 'wheel', 'keydown'];

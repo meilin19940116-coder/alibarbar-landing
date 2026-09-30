@@ -108,17 +108,32 @@ test('Animation cancellation destroys the overlay', () => {
 
 for (const [label, options] of Object.entries({
   'missing template': { noTemplate: true },
-  'late component stylesheet': { lateStyles: true },
   'disabled component': { disabled: true },
   'reduced motion': { reduced: true },
   'background page': { hidden: true },
-  'already painted page': { painted: true },
   'late script': { readyState: 'complete' },
   'restored scroll': { scrollY: 120 },
   'deep link': { hash: '#flavours' }
 })) {
   test('Skips safely: ' + label, () => assertClean(setup(options)));
 }
+
+test('External stylesheet readiness cannot disable the embedded intro', () => {
+  assert.equal(setup({ lateStyles: true }).intro.connected, true);
+});
+
+test('A paint timing entry does not suppress a normal initial intro', () => {
+  assert.equal(setup({ painted: true }).intro.connected, true);
+});
+
+test('Published HTML embeds the exact current component sources', () => {
+  const { renderIntro } = require('../scripts/build-intro.cjs');
+  const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  assert.equal(renderIntro(html), html);
+  assert.equal(renderIntro(renderIntro(html)), html, 'Build must be idempotent');
+  assert.doesNotMatch(html, /(?:src|href)="\.\/brand-intro\.(?:js|css)"/);
+  assert.ok(html.indexOf('data-brand-intro-controller') < html.indexOf('<!-- 导航栏 -->'));
+});
 
 for (const [label, style] of Object.entries({
   'missing CSS': { animationName: 'none' },
