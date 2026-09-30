@@ -1,6 +1,7 @@
 /**
- * Cloudflare Workers 斗篷脚本 - 简单直接版
- * 爬虫看白页，真人看黑页，就这么简单！
+ * Cloudflare Workers 斗篷脚本 - 测试版（无国家限制）
+ * 适合：测试期、开发调试
+ * 任何国家都能看黑页（只要不是爬虫）
  */
 
 // ==================== 配置区 ====================
@@ -16,8 +17,8 @@ const CONFIG = {
   // 测试后门密钥
   SECRET_TOKEN: 'alibar2024',
 
-  // 允许的国家（澳洲、新西兰）
-  ALLOWED_COUNTRIES: ['AU', 'NZ'],
+  // ⚠️ 测试模式：不限制国家
+  COUNTRY_CHECK: false,  // false = 任何国家都能看黑页
 
   // 是否开启调试日志
   DEBUG: true
@@ -120,7 +121,7 @@ function collectSignals(request) {
   };
 }
 
-// ==================== 决策引擎（超简单）====================
+// ==================== 决策引擎（无国家限制）====================
 
 function makeDecision(signals) {
   // 1. 检测爬虫 UA
@@ -148,18 +149,14 @@ function makeDecision(signals) {
     };
   }
 
-  // 4. 检测国家（非澳洲/新西兰）
-  if (!CONFIG.ALLOWED_COUNTRIES.includes(signals.country)) {
-    return {
-      page: 'SAFE',
-      reason: `国家: ${signals.country}`
-    };
-  }
+  // 4. 国家检测（测试模式下跳过）
+  // ⚠️ 测试版：不检查国家
+  // 正式投放时改用 cloudflare-worker-production.js
 
   // 通过所有检测 → 真实用户 → 黑页
   return {
     page: 'REAL',
-    reason: '真实用户'
+    reason: '真实用户（测试模式）'
   };
 }
 
@@ -180,6 +177,7 @@ async function fetchPage(request, pageType, reason) {
   if (CONFIG.DEBUG) {
     newResponse.headers.set('X-Cloak-Decision', pageType);
     newResponse.headers.set('X-Cloak-Reason', encodeURIComponent(reason));
+    newResponse.headers.set('X-Cloak-Mode', 'TEST');  // 标记测试模式
   }
 
   // 清理 Vercel 响应头

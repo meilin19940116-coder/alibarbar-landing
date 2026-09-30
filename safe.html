@@ -3,237 +3,452 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#000000">
-    <meta name="description" content="ALIBARBAR - Premium lifestyle electronics and accessories. Sydney delivery available.">
-    <title>ALIBARBAR - Premium Lifestyle Electronics</title>
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="description" content="Premium brass EDC lighter. Handcrafted metal craftsmanship meets modern minimalist design. Sydney delivery available.">
+    <meta name="robots" content="noindex, nofollow">
+    <title>ALIBARBAR - Premium Brass EDC Collection</title>
     <link rel="icon" href="./assets/alibarbar-logo.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="./styles.css">
-    <script src="./effects.js"></script>
-    <script src="./script.js" defer></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #fff;
+      }
+
+      .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid #e0e0e0;
+        padding: 1rem 2rem;
+        z-index: 1000;
+      }
+
+      .nav {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        text-decoration: none;
+        letter-spacing: 2px;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 2rem;
+        list-style: none;
+      }
+
+      .nav-links a {
+        color: #666;
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: color 0.3s;
+      }
+
+      .nav-links a:hover {
+        color: #1a1a1a;
+      }
+
+      .hero {
+        margin-top: 80px;
+        padding: 4rem 2rem;
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        color: #fff;
+        text-align: center;
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .hero h1 {
+        font-size: 3rem;
+        font-weight: 300;
+        margin-bottom: 1rem;
+        letter-spacing: 3px;
+      }
+
+      .hero h1 strong {
+        font-weight: 600;
+        color: #d4af37;
+      }
+
+      .hero p {
+        font-size: 1.2rem;
+        color: #bbb;
+        max-width: 600px;
+        margin: 0 auto 2rem;
+      }
+
+      .cta-button {
+        display: inline-block;
+        padding: 1rem 3rem;
+        background: #d4af37;
+        color: #1a1a1a;
+        text-decoration: none;
+        font-weight: 600;
+        border-radius: 4px;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.9rem;
+      }
+
+      .cta-button:hover {
+        background: #f0c952;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+      }
+
+      .products {
+        max-width: 1200px;
+        margin: 4rem auto;
+        padding: 0 2rem;
+      }
+
+      .section-title {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 300;
+        margin-bottom: 3rem;
+        color: #1a1a1a;
+      }
+
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 3rem;
+      }
+
+      .product-card {
+        background: #f9f9f9;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s;
+      }
+
+      .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      }
+
+      .product-image {
+        width: 100%;
+        height: 300px;
+        background: linear-gradient(135deg, #2d2d2d, #1a1a1a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #d4af37;
+        font-size: 3rem;
+        font-weight: 300;
+      }
+
+      .product-info {
+        padding: 2rem;
+      }
+
+      .product-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #1a1a1a;
+      }
+
+      .product-desc {
+        color: #666;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+        line-height: 1.6;
+      }
+
+      .product-price {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #d4af37;
+        margin-bottom: 1rem;
+      }
+
+      .product-button {
+        display: block;
+        width: 100%;
+        padding: 0.8rem;
+        background: #1a1a1a;
+        color: #fff;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: background 0.3s;
+        font-weight: 500;
+      }
+
+      .product-button:hover {
+        background: #2d2d2d;
+      }
+
+      .features {
+        background: #f5f5f5;
+        padding: 4rem 2rem;
+        margin: 4rem 0;
+      }
+
+      .features-content {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+
+      .feature-item {
+        text-align: center;
+        padding: 2rem;
+      }
+
+      .feature-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .feature-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #1a1a1a;
+      }
+
+      .feature-desc {
+        color: #666;
+        font-size: 0.9rem;
+      }
+
+      .footer {
+        background: #1a1a1a;
+        color: #999;
+        padding: 3rem 2rem 2rem;
+      }
+
+      .footer-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+      }
+
+      .footer-section h3 {
+        color: #d4af37;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+      }
+
+      .footer-links {
+        list-style: none;
+      }
+
+      .footer-links li {
+        margin-bottom: 0.5rem;
+      }
+
+      .footer-links a {
+        color: #999;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.3s;
+      }
+
+      .footer-links a:hover {
+        color: #d4af37;
+      }
+
+      .footer-bottom {
+        max-width: 1200px;
+        margin: 2rem auto 0;
+        padding-top: 2rem;
+        border-top: 1px solid #333;
+        text-align: center;
+        font-size: 0.85rem;
+      }
+
+      @media (max-width: 768px) {
+        .nav-links {
+          display: none;
+        }
+
+        .hero h1 {
+          font-size: 2rem;
+        }
+
+        .hero p {
+          font-size: 1rem;
+        }
+
+        .product-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .footer-content {
+          grid-template-columns: 1fr;
+          text-align: center;
+        }
+      }
+    </style>
   </head>
   <body>
-    <!-- 安全页面：给广告平台审核看的合规版本 -->
-    <!-- 品牌开场关闭 -->
-    <template data-brand-intro-template data-enabled="false"></template>
-
-    <!-- 导航栏 -->
-    <header class="header" data-header>
-      <a class="logo" href="#top">
-        <img src="./assets/alibarbar-logo.svg" alt="ALIBARBAR">
-      </a>
-      <nav class="nav" data-nav>
-        <a href="#products">Products</a>
-        <a href="#features">Features</a>
-        <a href="#contact">Contact</a>
+    <header class="header">
+      <nav class="nav">
+        <a href="#" class="logo">ALIBARBAR</a>
+        <ul class="nav-links">
+          <li><a href="#products">Products</a></li>
+          <li><a href="#features">Craftsmanship</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
       </nav>
-      <a class="btn-header" href="#contact">
-        Contact Us
-      </a>
-      <button class="nav-toggle" data-nav-toggle aria-label="Menu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
     </header>
 
-    <main>
-      <!-- 首屏 -->
-      <section class="hero" id="top">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-          <div class="hero-left">
-            <h1>
-              <span class="brand">ALIBARBAR</span>
-              <span class="model">Premium Lifestyle</span>
-            </h1>
-            <p class="tagline">Discover premium electronics and accessories.<br>Quality products for modern living.</p>
-            <div class="hero-actions">
-              <a class="btn-primary" href="#contact" data-track="hero">
-                Explore Products
-              </a>
-            </div>
-            <div class="hero-stats">
-              <div><strong>Premium</strong> Quality</div>
-              <div><strong>Fast</strong> Delivery</div>
-              <div><strong>Sydney</strong> Based</div>
-            </div>
+    <section class="hero">
+      <h1>Premium <strong>Brass</strong> Collection</h1>
+      <p>Handcrafted EDC lighters that blend timeless craftsmanship with modern minimalist design. Built to last a lifetime.</p>
+      <a href="#products" class="cta-button">Explore Collection</a>
+    </section>
+
+    <section class="products" id="products">
+      <h2 class="section-title">Our Collection</h2>
+      <div class="product-grid">
+        <div class="product-card">
+          <div class="product-image">⬡</div>
+          <div class="product-info">
+            <h3 class="product-name">Classic Brass Lighter</h3>
+            <p class="product-desc">Solid brass construction with precision-machined components. Develops a unique patina over time.</p>
+            <div class="product-price">AUD $89</div>
+            <a href="#contact" class="product-button">Inquire Now</a>
           </div>
         </div>
-      </section>
 
-      <!-- 产品展示 -->
-      <section class="product-design" id="products">
-        <div class="container">
-          <div class="design-intro">
-            <span class="design-badge">Our Products</span>
-            <h2>Quality You Can<br><span class="text-gold">Trust</span></h2>
-          </div>
-
-          <div class="design-showcase">
-            <div class="design-item" data-design="1">
-              <div class="design-image">
-                <div class="design-number">01</div>
-              </div>
-              <div class="design-info">
-                <h3>Premium Electronics</h3>
-                <p>High-quality electronic devices for everyday use. Reliable performance you can count on.</p>
-              </div>
-            </div>
-
-            <div class="design-item" data-design="2">
-              <div class="design-image">
-                <div class="design-number">02</div>
-              </div>
-              <div class="design-info">
-                <h3>Smart Accessories</h3>
-                <p>Innovative accessories designed to complement your lifestyle and enhance your experience.</p>
-              </div>
-            </div>
-
-            <div class="design-item" data-design="3">
-              <div class="design-image">
-                <div class="design-number">03</div>
-              </div>
-              <div class="design-info">
-                <h3>Modern Design</h3>
-                <p>Sleek, contemporary designs that fit seamlessly into your daily routine.</p>
-              </div>
-            </div>
-
-            <div class="design-item" data-design="4">
-              <div class="design-image">
-                <div class="design-number">04</div>
-              </div>
-              <div class="design-info">
-                <h3>Quality Assurance</h3>
-                <p>Every product undergoes strict quality control to ensure your satisfaction.</p>
-              </div>
-            </div>
+        <div class="product-card">
+          <div class="product-image">◇</div>
+          <div class="product-info">
+            <h3 class="product-name">Minimal Black Edition</h3>
+            <p class="product-desc">Matte black finish with brass accents. Modern aesthetic meets traditional reliability.</p>
+            <div class="product-price">AUD $99</div>
+            <a href="#contact" class="product-button">Inquire Now</a>
           </div>
         </div>
-      </section>
 
-      <!-- 特性展示 -->
-      <section class="lifestyle" id="features">
-        <div class="container">
-          <div class="lifestyle-header">
-            <h2>Why Choose<br><span class="text-gold">ALIBARBAR</span></h2>
-            <p>Excellence in every detail</p>
-          </div>
-
-          <div class="lifestyle-grid">
-            <div class="lifestyle-card">
-              <div class="lifestyle-image">
-                <div class="lifestyle-overlay">
-                  <h3>Premium Quality</h3>
-                  <p>Trusted materials and craftsmanship</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="lifestyle-card">
-              <div class="lifestyle-image">
-                <div class="lifestyle-overlay">
-                  <h3>Fast Shipping</h3>
-                  <p>Quick delivery across Sydney</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="lifestyle-card">
-              <div class="lifestyle-image">
-                <div class="lifestyle-overlay">
-                  <h3>Customer Service</h3>
-                  <p>Dedicated support team</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="lifestyle-card">
-              <div class="lifestyle-image">
-                <div class="lifestyle-overlay">
-                  <h3>Authentic Products</h3>
-                  <p>100% genuine guarantee</p>
-                </div>
-              </div>
-            </div>
+        <div class="product-card">
+          <div class="product-image">○</div>
+          <div class="product-info">
+            <h3 class="product-name">Polished Steel Series</h3>
+            <p class="product-desc">Mirror-polished stainless steel with brass core. Premium weight and balance.</p>
+            <div class="product-price">AUD $119</div>
+            <a href="#contact" class="product-button">Inquire Now</a>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- 联系区 -->
-      <section class="order-section" id="contact">
-        <div class="container">
-          <div class="order-split">
-            <div class="order-left">
-              <span class="order-badge">Get in Touch</span>
-              <h2>Contact Us<br><span class="text-gold">Today</span></h2>
-              <ul class="order-features">
-                <li>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M16.667 5L7.5 14.167 3.333 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <span>Premium quality products</span>
-                </li>
-                <li>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M16.667 5L7.5 14.167 3.333 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <span>Fast delivery in Sydney area</span>
-                </li>
-                <li>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M16.667 5L7.5 14.167 3.333 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <span>Secure payment options</span>
-                </li>
-                <li>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M16.667 5L7.5 14.167 3.333 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <span>Dedicated customer support</span>
-                </li>
-                <li>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M16.667 5L7.5 14.167 3.333 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <span>100% authentic guarantee</span>
-                </li>
-              </ul>
-            </div>
-
-            <div class="order-right">
-              <div class="order-cta-box">
-                <p class="order-cta-text">Contact us for product inquiries, pricing, and delivery information</p>
-                <a class="btn-whatsapp" href="mailto:info@alibarbar.com" data-track="cta">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  Contact Us
-                </a>
-                <div class="order-trust-badges">
-                  <span>✓ Secure Shopping</span>
-                  <span>✓ Fast Response</span>
-                </div>
-              </div>
-            </div>
+    <section class="features" id="features">
+      <div class="features-content">
+        <h2 class="section-title">Why Choose Us</h2>
+        <div class="features-grid">
+          <div class="feature-item">
+            <div class="feature-icon">⚒️</div>
+            <h3 class="feature-title">Handcrafted</h3>
+            <p class="feature-desc">Each piece is individually crafted by skilled artisans using traditional techniques.</p>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">♻️</div>
+            <h3 class="feature-title">Lifetime Quality</h3>
+            <p class="feature-desc">Built to last generations. Premium materials that age beautifully.</p>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🇦🇺</div>
+            <h3 class="feature-title">Sydney Based</h3>
+            <p class="feature-desc">Fast Australia-wide shipping. Local customer support.</p>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">✓</div>
+            <h3 class="feature-title">Satisfaction Guaranteed</h3>
+            <p class="feature-desc">30-day return policy. We stand behind our craftsmanship.</p>
           </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
 
-    <!-- 页脚 -->
-    <footer class="footer">
-      <p>&copy; <span data-year></span> ALIBARBAR. Premium lifestyle products.</p>
+    <footer class="footer" id="contact">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>About</h3>
+          <ul class="footer-links">
+            <li><a href="#about">Our Story</a></li>
+            <li><a href="#craftsmanship">Craftsmanship</a></li>
+            <li><a href="#materials">Materials</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Support</h3>
+          <ul class="footer-links">
+            <li><a href="#shipping">Shipping Info</a></li>
+            <li><a href="#returns">Returns</a></li>
+            <li><a href="#care">Care Guide</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Legal</h3>
+          <ul class="footer-links">
+            <li><a href="#privacy">Privacy Policy</a></li>
+            <li><a href="#terms">Terms of Service</a></li>
+            <li><a href="#refund">Refund Policy</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Contact</h3>
+          <ul class="footer-links">
+            <li><a href="mailto:info@synchro-match.com">info@synchro-match.com</a></li>
+            <li><a href="tel:+61412345678">+61 412 345 678</a></li>
+            <li>Sydney, Australia</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; <span id="year"></span> ALIBARBAR. Premium brass craftsmanship since 2020.</p>
+      </div>
     </footer>
 
-    <!-- 浮动按钮改为邮件联系 -->
-    <a class="float-btn" href="mailto:info@alibarbar.com" data-track="float">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </a>
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
+    </script>
   </body>
 </html>
