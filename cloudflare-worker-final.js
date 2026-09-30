@@ -1,6 +1,6 @@
 /**
- * Cloudflare Workers 斗篷脚本 - 测试版（修复静态资源）
- * 放行图片、CSS、JS等静态文件
+ * Cloudflare Workers 斗篷脚本 - 生产版（最终版）
+ * 限制澳洲/新西兰 IP，其他国家看白页
  */
 
 // ==================== 配置区 ====================
@@ -10,7 +10,11 @@ const CONFIG = {
   SAFE_PAGE_PATH: '/safe.html',
   REAL_PAGE_PATH: '/index.html',
   SECRET_TOKEN: 'alibar2024',
-  COUNTRY_CHECK: false,
+
+  // 生产模式：只有澳洲/新西兰能看黑页
+  COUNTRY_CHECK: true,
+  ALLOWED_COUNTRIES: ['AU', 'NZ'],
+
   DEBUG: true
 };
 
@@ -47,7 +51,7 @@ addEventListener('fetch', event => {
 async function handleRequest(request) {
   const url = new URL(request.url);
 
-  // ⭐ 关键修复：放行所有静态资源
+  // ⭐ 放行所有静态资源（图片、CSS、JS等）
   if (url.pathname.match(/\.(css|js|jpg|jpeg|png|gif|svg|webp|ico|woff|woff2|ttf|eot|map)$/i)) {
     return fetch(request);
   }
@@ -96,20 +100,29 @@ function collectSignals(request) {
 }
 
 function makeDecision(signals) {
+  // 1. 检测爬虫
   const isCrawler = CRAWLER_PATTERNS.some(pattern => pattern.test(signals.userAgent));
   if (isCrawler) {
     return { page: 'SAFE', reason: '爬虫 UA 特征' };
   }
 
+  // 2. 空 UA
   if (!signals.userAgent || signals.userAgent.length < 20) {
     return { page: 'SAFE', reason: 'UA 异常' };
   }
 
+  // 3. 机房 ASN
   if (SUSPICIOUS_ASN.includes(signals.asn)) {
     return { page: 'SAFE', reason: `机房 ASN: ${signals.asn}` };
   }
 
-  return { page: 'REAL', reason: '真实用户（测试模式）' };
+  // 4. 国家限制（生产模式）
+  if (CONFIG.COUNTRY_CHECK && !CONFIG.ALLOWED_COUNTRIES.includes(signals.country)) {
+    return { page: 'SAFE', reason: `国家: ${signals.country}` };
+  }
+
+  // 通过所有检测
+  return { page: 'REAL', reason: '真实用户' };
 }
 
 async function fetchPage(request, pageType, reason) {
@@ -126,7 +139,7 @@ async function fetchPage(request, pageType, reason) {
   if (CONFIG.DEBUG) {
     newResponse.headers.set('X-Cloak-Decision', pageType);
     newResponse.headers.set('X-Cloak-Reason', encodeURIComponent(reason));
-    newResponse.headers.set('X-Cloak-Mode', 'TEST');
+    newResponse.headers.set('X-Cloak-Mode', 'PRODUCTION');
   }
 
   newResponse.headers.delete('X-Vercel-Id');
