@@ -1,36 +1,5 @@
 // ALIBARBAR 9000 - 简洁高转化脚本
 
-// 液体粒子开场动画
-const initIntro = () => {
-  const screen = document.querySelector('[data-intro]');
-
-  if (!screen) {
-    document.body.classList.remove('intro-active');
-    return;
-  }
-
-  document.body.classList.add('intro-active');
-
-  // 预加载背景图
-  const isMobile = window.innerWidth <= 768;
-  const bgImage = isMobile ? './assets/背景图手机端.png' : './assets/背景图电脑.png';
-  const bgPreload = new Image();
-  bgPreload.src = bgImage;
-
-  // 启动液体粒子动画
-  if (typeof window.initLiquidIntro === 'function') {
-    window.initLiquidIntro();
-  }
-
-  // 确保背景图显示
-  setTimeout(() => {
-    const hero = document.querySelector('.hero');
-    if (hero) {
-      hero.style.backgroundImage = `url('${bgImage}')`;
-    }
-  }, 2500);
-};
-
 // 首屏背景视频（定格循环）
 const startHeroVideo = () => {
   const video = document.querySelector('[data-hero-video]');
@@ -227,7 +196,6 @@ const setupHeaderScroll = () => {
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
-  initIntro();
   initCarousel();
   setupNav();
   setupScroll();

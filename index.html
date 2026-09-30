@@ -8,15 +8,27 @@
     <title>ALIBARBAR 9000</title>
     <link rel="icon" href="./assets/alibarbar-logo.svg" type="image/svg+xml">
     <link rel="stylesheet" href="./styles.css">
-    <script src="./liquid-intro.js"></script>
+    <link rel="preload" href="./brand-intro.css" as="style">
+    <link rel="stylesheet" href="./brand-intro.css" media="print" data-brand-intro-styles>
+    <script src="./brand-intro.js" defer></script>
     <script src="./effects.js"></script>
     <script src="./script.js" defer></script>
   </head>
   <body>
-    <!-- 开场动画 - 液体流动汇聚成文字 -->
-    <div class="intro-screen" data-intro>
-      <canvas id="liquid-canvas"></canvas>
-    </div>
+    <!-- 独立开场：改为 data-enabled="false" 即可关闭；无 JS 时模板不会显示。 -->
+    <template data-brand-intro-template data-enabled="true">
+      <div class="brand-intro" aria-hidden="true" hidden>
+        <div class="brand-intro__halo"></div>
+        <div class="brand-intro__line"></div>
+        <div class="brand-intro__curtain"></div>
+        <div class="brand-intro__signature">
+          <div class="brand-intro__wordmark">
+            <span>A</span><span>L</span><span>I</span><span>B</span><span>A</span><span>R</span><span>B</span><span>A</span><span>R</span>
+          </div>
+          <div class="brand-intro__model">9000</div>
+        </div>
+      </div>
+    </template>
 
     <!-- 导航栏 -->
     <header class="header" data-header>
