@@ -7,7 +7,7 @@
 
 const CONFIG = {
   // Vercel 部署的域名
-  VERCEL_DOMAIN: 'your-project.vercel.app',
+  VERCEL_DOMAIN: 'www.synchro-match.com',
 
   // 安全页面路径（相对于项目根目录）
   SAFE_PAGE_PATH: '/safe.html',
